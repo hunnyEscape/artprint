@@ -1,0 +1,64 @@
+.
+├── README.md
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── project_structure.txt
+├── public
+│   ├── next.svg
+│   └── vercel.svg
+├── src
+│   ├── app
+│   │   ├── api
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── lp
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── components
+│   │   ├── analytics
+│   │   │   └── page-analytics.tsx
+│   │   ├── layout
+│   │   │   ├── container.tsx
+│   │   │   ├── footer.tsx
+│   │   │   └── navbar.tsx
+│   │   ├── sections
+│   │   │   ├── ShowcaseSection.tsx
+│   │   │   ├── case-study-section.tsx
+│   │   │   ├── comparison-section.tsx
+│   │   │   ├── cta-section.tsx
+│   │   │   ├── faq-section.tsx
+│   │   │   ├── features-section.tsx
+│   │   │   ├── gallery-preview-section.tsx
+│   │   │   ├── hero-section.tsx
+│   │   │   ├── how-it-works-section.tsx
+│   │   │   ├── interior-basics-section.tsx
+│   │   │   ├── limited-collection-section.tsx
+│   │   │   ├── next-release-countdown-section.tsx
+│   │   │   ├── problem-section.tsx
+│   │   │   ├── product-showcase
+│   │   │   │   └── ProductGallery.tsx
+│   │   │   ├── showcase-section.tsx
+│   │   │   ├── solution-section.tsx
+│   │   │   ├── subscription-cta-section.tsx
+│   │   │   └── testimonials-section.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       └── ec-link-button.tsx
+│   ├── constants
+│   ├── data
+│   │   └── featured-products.ts
+│   ├── hooks
+│   ├── lib
+│   │   └── analytics.ts
+│   ├── styles
+│   ├── types
+│   └── utils
+│       └── cn.ts
+├── tailwind.config.js
+└── tsconfig.json
+
+18 directories, 43 files
