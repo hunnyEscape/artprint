@@ -1,5 +1,7 @@
 /* TailwindCSS v4用のglobals.css */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
 /* テーマ設定 */
