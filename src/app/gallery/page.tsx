@@ -8,7 +8,7 @@ import { ShowcaseBackgroundManager } from '@/components/showcase/ShowcaseBackgro
 
 export default function ShowcaseGalleryPage() {
 	return (
-		<ShowcaseProvider>
+		<ShowcaseProvider initialProducts={featuredProducts}>
 			{/* グローバル背景マネージャー */}
 			<ShowcaseBackgroundManager />
 
@@ -19,6 +19,7 @@ export default function ShowcaseGalleryPage() {
 						key={product.id}
 						product={product}
 						index={index}
+						totalProducts={featuredProducts.length}
 					/>
 				))}
 

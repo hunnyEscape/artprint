@@ -8,12 +8,17 @@ interface ShowcaseContextType {
   activeSection: string | null;
   activeSectionIndex: number;
   activeProduct: Product | null;
+  nextProduct: Product | null;
+  previousProduct: Product | null; // 前の製品を追加
   setActiveSection: (sectionId: string) => void;
   setActiveSectionIndex: (index: number) => void;
   setActiveProduct: (product: Product) => void;
+  setNextProduct: (product: Product | null) => void;
+  setPreviousProduct: (product: Product | null) => void; // 前の製品を設定する関数を追加
   registerSection: (sectionId: string, products: Product[]) => void;
   unregisterSection: (sectionId: string) => void;
   sections: Record<string, { products: Product[] }>;
+  allProducts: Product[];
 }
 
 // デフォルト値
@@ -21,27 +26,35 @@ const defaultContext: ShowcaseContextType = {
   activeSection: null,
   activeSectionIndex: 0,
   activeProduct: null,
+  nextProduct: null,
+  previousProduct: null,
   setActiveSection: () => {},
   setActiveSectionIndex: () => {},
   setActiveProduct: () => {},
+  setNextProduct: () => {},
+  setPreviousProduct: () => {},
   registerSection: () => {},
   unregisterSection: () => {},
-  sections: {}
+  sections: {},
+  allProducts: []
 };
 
 // コンテキスト作成
 const ShowcaseContext = createContext<ShowcaseContextType>(defaultContext);
 
 // コンテキストプロバイダー
-export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
+export const ShowcaseProvider = ({ children, initialProducts = [] }: { children: ReactNode, initialProducts?: Product[] }) => {
   const [state, setState] = useState({
     activeSection: null as string | null,
     activeSectionIndex: 0,
     activeProduct: null as Product | null,
-    sections: {} as Record<string, { products: Product[] }>
+    nextProduct: null as Product | null,
+    previousProduct: null as Product | null,
+    sections: {} as Record<string, { products: Product[] }>,
+    allProducts: initialProducts
   });
   
-  const { activeSection, activeSectionIndex, activeProduct, sections } = state;
+  const { activeSection, activeSectionIndex, activeProduct, nextProduct, previousProduct, sections, allProducts } = state;
 
   // アクティブセクションを設定
   const setActiveSection = useCallback((sectionId: string) => {
@@ -66,11 +79,57 @@ export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
+    setState(prev => {
+      // 更新されるアクティブな製品情報
+      const updatedState: Partial<typeof prev> = {
+        activeProduct: product
+      };
+      
+      // 製品が指定された場合、前後の製品も設定
+      if (product && allProducts.length > 0) {
+        const currentIndex = allProducts.findIndex(p => p.id === product.id);
+        
+        // 次の製品を設定（存在する場合）
+        if (currentIndex >= 0 && currentIndex < allProducts.length - 1) {
+          updatedState.nextProduct = allProducts[currentIndex + 1];
+        } else {
+          updatedState.nextProduct = null;
+        }
+        
+        // 前の製品を設定（存在する場合）
+        if (currentIndex > 0) {
+          updatedState.previousProduct = allProducts[currentIndex - 1];
+        } else {
+          updatedState.previousProduct = null;
+        }
+      } else {
+        // 製品が指定されなかった場合はnullに設定
+        updatedState.nextProduct = null;
+        updatedState.previousProduct = null;
+      }
+      
+      return {
+        ...prev,
+        ...updatedState
+      };
+    });
+  }, [activeProduct, allProducts]);
+
+  // 次の製品を明示的に設定する関数
+  const setNextProduct = useCallback((product: Product | null) => {
     setState(prev => ({
       ...prev,
-      activeProduct: product
+      nextProduct: product
     }));
-  }, [activeProduct]);
+  }, []);
+
+  // 前の製品を明示的に設定する関数
+  const setPreviousProduct = useCallback((product: Product | null) => {
+    setState(prev => ({
+      ...prev,
+      previousProduct: product
+    }));
+  }, []);
 
   // セクションの登録
   const registerSection = useCallback((sectionId: string, products: Product[]) => {
@@ -80,19 +139,30 @@ export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
         [sectionId]: { products }
       };
       
+      // すべての製品リストを更新
+      const allProductsList = Object.values(newSections).flatMap(section => section.products);
+      
       // 最初のセクションが登録されたらアクティブにする
       if (!prev.activeSection) {
+        const firstProduct = products[0] || null;
+        const nextProduct = products.length > 1 ? products[1] : null;
+        const previousProduct = null; // 最初のセクションなので前の製品はない
+        
         return {
           ...prev,
           activeSection: sectionId,
-          activeProduct: products[0] || null,
-          sections: newSections
+          activeProduct: firstProduct,
+          nextProduct,
+          previousProduct,
+          sections: newSections,
+          allProducts: allProductsList
         };
       }
       
       return {
         ...prev,
-        sections: newSections
+        sections: newSections,
+        allProducts: allProductsList
       };
     });
   }, []);
@@ -103,76 +173,48 @@ export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
       const newSections = { ...prev.sections };
       delete newSections[sectionId];
       
+      // すべての製品リストを更新
+      const allProductsList = Object.values(newSections).flatMap(section => section.products);
+      
       // アクティブセクションが削除された場合、別のセクションをアクティブにする
       if (prev.activeSection === sectionId) {
         const remainingSections = Object.keys(newSections);
         
         if (remainingSections.length > 0) {
+          const firstSection = remainingSections[0];
+          const firstSectionProducts = newSections[firstSection]?.products || [];
+          const firstProduct = firstSectionProducts[0] || null;
+          const nextProduct = firstSectionProducts.length > 1 ? firstSectionProducts[1] : null;
+          
           return {
             ...prev,
-            activeSection: remainingSections[0],
-            activeProduct: newSections[remainingSections[0]]?.products[0] || null,
-            sections: newSections
+            activeSection: firstSection,
+            activeProduct: firstProduct,
+            nextProduct,
+            previousProduct: null, // 最初のセクションを選択するので前の製品はない
+            sections: newSections,
+            allProducts: allProductsList
           };
         } else {
           return {
             ...prev,
             activeSection: null,
             activeProduct: null,
-            sections: newSections
+            nextProduct: null,
+            previousProduct: null,
+            sections: newSections,
+            allProducts: allProductsList
           };
         }
       }
       
       return {
         ...prev,
-        sections: newSections
+        sections: newSections,
+        allProducts: allProductsList
       };
     });
   }, []);
-
-  // スクロール位置に応じてアクティブセクションを判定
-  useEffect(() => {
-    const handleScroll = () => {
-      // セクション要素を取得
-      const sectionElements = document.querySelectorAll('.product-showcase');
-      if (sectionElements.length === 0) return;
-
-      // 画面表示範囲内に最も多く含まれるセクションを判定
-      let maxVisibleSection: Element | null = null;
-      let maxVisibleArea = 0;
-
-      sectionElements.forEach((section) => {
-        const rect = section.getBoundingClientRect();
-        const visibleHeight = Math.min(window.innerHeight, rect.bottom) - 
-                             Math.max(0, rect.top);
-        if (visibleHeight > maxVisibleArea) {
-          maxVisibleArea = visibleHeight;
-          maxVisibleSection = section;
-        }
-      });
-
-      // アクティブセクションを更新
-      if (maxVisibleSection) {
-        const sectionId = maxVisibleSection.id;
-        if (sectionId && sectionId !== activeSection) {
-          setActiveSection(sectionId);
-          // セクションに対応する製品を検索して選択
-          for (const [id, data] of Object.entries(sections)) {
-            if (id === sectionId && data.products.length > 0) {
-              setActiveProduct(data.products[0]);
-              break;
-            }
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // 初期チェック
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [sections, activeSection, setActiveSection, setActiveProduct]);
 
   return (
     <ShowcaseContext.Provider
@@ -180,12 +222,17 @@ export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
         activeSection,
         activeSectionIndex,
         activeProduct,
+        nextProduct,
+        previousProduct,
         setActiveSection,
         setActiveSectionIndex,
         setActiveProduct,
+        setNextProduct,
+        setPreviousProduct,
         registerSection,
         unregisterSection,
-        sections
+        sections,
+        allProducts
       }}
     >
       {children}
