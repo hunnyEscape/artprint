@@ -7,6 +7,7 @@ import { ProductDetails } from './ProductDetails';
 import { InteriorPreview } from './InteriorPreview';
 import { Container } from '@/components/layout/container';
 import { useImagePreload } from '@/hooks/useImagePreload';
+import { useShowcase } from '@/contexts/ShowcaseContext';
 
 interface ProductShowcaseSectionProps {
 	product: Product;
@@ -17,9 +18,10 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 	product,
 	index
 }) => {
-	const backgroundRef = useRef<HTMLDivElement>(null);
+	const { setActiveProduct } = useShowcase();
+	const sectionRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
-	const [isBackgroundVisible, setIsBackgroundVisible] = useState(false);
+	const [isVisible, setIsVisible] = useState(false);
 
 	// 各製品セクションの一意のID
 	const sectionId = useMemo(() => `product-${product.id}`, [product.id]);
@@ -32,22 +34,32 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 
 	const isImageLoaded = useImagePreload(mainImageUrl);
 
-	// 背景のビジビリティをスクロール位置に応じて監視
+	// セクションのビジビリティをスクロール位置に応じて監視
 	useEffect(() => {
 		const handleScroll = () => {
-			if (!backgroundRef.current) return;
+			if (!sectionRef.current) return;
 
-			const rect = backgroundRef.current.getBoundingClientRect();
-			// 背景セクションが画面に入ったかどうかを判定
-			const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
-			setIsBackgroundVisible(isVisible);
+			const rect = sectionRef.current.getBoundingClientRect();
+			// セクションが画面の中央付近にあるかどうかを判定
+			const isCentrallyVisible =
+				rect.top <= window.innerHeight / 2 &&
+				rect.bottom >= window.innerHeight / 2;
+
+			if (isCentrallyVisible && !isVisible) {
+				setIsVisible(true);
+				// このセクションがビューポートの中央にあるとき、
+				// アクティブな製品として設定
+				setActiveProduct(product);
+			} else if (!isCentrallyVisible && isVisible) {
+				setIsVisible(false);
+			}
 		};
 
 		window.addEventListener('scroll', handleScroll);
 		handleScroll(); // 初期チェック
 
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, []);
+	}, [product, setActiveProduct, isVisible]);
 
 	// 製品レイアウトタイプに応じたスタイル
 	const styles = useMemo(() => {
@@ -84,52 +96,11 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 	}, [product.layoutType, product.accentColor]);
 
 	return (
-		<section id={sectionId} className="product-showcase relative">
-			{/* 背景セクション - 固定位置で z-index:-1 を使用 */}
-			<div
-				ref={backgroundRef}
-				className="fixed top-0 w-full h-[100vh] overflow-hidden"
-				style={{ zIndex: -1 }}
-			>
-				{/* 背景画像 */}
-				<div
-					className={`absolute inset-0 transition-opacity duration-700 ${isBackgroundVisible && isImageLoaded ? 'opacity-100' : 'opacity-0'
-						}`}
-					style={{
-						backgroundImage: `url(${mainImageUrl})`,
-						backgroundSize: 'cover',
-						backgroundPosition: 'center',
-					}}
-				>
-					{/* オーバーレイグラデーション */}
-					<div
-						className="absolute inset-0"
-						style={{
-							background: `linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.8))`,
-						}}
-					/>
-				</div>
-
-				{/* 画像読み込み中はプレースホルダーを表示 */}
-				{!isImageLoaded && (
-					<div
-						className="absolute inset-0 flex items-center justify-center"
-						style={{
-							background: `linear-gradient(135deg, ${product.accentColor || '#3B82F6'}33, ${product.accentColor || '#3B82F6'}11)`,
-						}}
-					>
-						<div className="text-center">
-							<div className="animate-pulse mb-4">
-								<svg className="w-16 h-16 mx-auto text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-								</svg>
-							</div>
-							<h2 className="text-2xl font-bold text-white/70">{product.title}</h2>
-						</div>
-					</div>
-				)}
-			</div>
-
+		<section
+			id={sectionId}
+			ref={sectionRef}
+			className="product-showcase relative"
+		>
 			{/* タイトルセクション - 最初の画面で表示するための高さ設定 */}
 			<div className="relative h-[100vh] flex items-end">
 				<div className="absolute left-0 bottom-0 w-full p-8">
