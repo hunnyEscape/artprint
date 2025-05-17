@@ -2,14 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Product } from '@/data/featured-products';
-import {
-	scaleModel,
-	togglePlacementMode,
-	optimizeARExperience,
-	setupARControls,
-	addARStyles,
-	showARToast
-} from './ar-controls';
+import { scaleModel, togglePlacementMode, optimizeARExperience } from './ar-controls';
 
 interface ARPreviewProps {
 	product: Product;
@@ -21,12 +14,10 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 	const [isARSupported, setIsARSupported] = useState(false);
 	const [isARMode, setIsARMode] = useState(false);
 	const [showInstructions, setShowInstructions] = useState(true);
-	const [placementMode, setPlacementMode] = useState<'wall' | 'floor'>('wall');
 
 	const modelViewerRef = useRef<HTMLElement | null>(null);
-	const arCleanupRef = useRef<{ cleanup: () => void } | null>(null);
 
-	// model-viewerの読み込みとAR対応チェック
+	// model-viewerの読み込み
 	useEffect(() => {
 		const loadModelViewer = async () => {
 			try {
@@ -43,10 +34,6 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 					const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 					setIsARSupported(isIOS);
 				}
-
-				// ARモード用のカスタムスタイルを追加
-				addARStyles();
-
 			} catch (error) {
 				console.error('Error loading model-viewer:', error);
 			}
@@ -61,81 +48,33 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 
 		const modelViewer = modelViewerRef.current;
 
-		// デバイスに合わせたAR体験の最適化
-		optimizeARExperience(modelViewer);
-
-		// AR拡張セットアップ
-		arCleanupRef.current = setupARControls(modelViewer);
-
 		// AR入室時のイベント
 		const handleARStatus = (event: any) => {
 			if (event.detail.status === 'session-started') {
 				setIsARMode(true);
-				// ARセッション開始時に操作ガイドを表示
-				showARToast('指でピンチして拡大・縮小、ドラッグして移動できます', 5000);
 			} else if (event.detail.status === 'session-ended') {
 				setIsARMode(false);
 			}
 		};
 
-		// モデル読み込み完了イベント
-		const handleLoad = () => {
-			console.log('モデル読み込み完了');
-		};
-
 		modelViewer.addEventListener('ar-status', handleARStatus);
-		modelViewer.addEventListener('load', handleLoad);
 
-		// AR起動前の状態を設定
-		modelViewer.setAttribute('ar-placement', placementMode);
+		// デバイスに合わせたAR体験の最適化
+		try {
+			optimizeARExperience(modelViewer);
+		} catch (error) {
+			console.error('AR最適化中にエラーが発生しました:', error);
+		}
 
 		return () => {
 			// イベントリスナーのクリーンアップ
 			modelViewer.removeEventListener('ar-status', handleARStatus);
-			modelViewer.removeEventListener('load', handleLoad);
-
-			// AR拡張のクリーンアップ
-			if (arCleanupRef.current) {
-				arCleanupRef.current.cleanup();
-			}
 		};
-	}, [isModelViewerLoaded, placementMode]);
+	}, [isModelViewerLoaded]);
 
 	// 指示を非表示にする
 	const hideInstructions = () => {
 		setShowInstructions(false);
-	};
-
-	// 配置モード切替処理
-	const handleTogglePlacement = () => {
-		if (!modelViewerRef.current) return;
-
-		const newMode = togglePlacementMode(modelViewerRef.current);
-		if (newMode) {
-			setPlacementMode(newMode as 'wall' | 'floor');
-			// フィードバックを表示
-			showARToast(`${newMode === 'wall' ? '壁' : '床'}配置モードに切り替えました`, 2000);
-		}
-	};
-
-	// 拡大処理
-	const handleScaleUp = () => {
-		if (!modelViewerRef.current) return;
-
-		const success = scaleModel(modelViewerRef.current, 1.2);
-		if (success && isARMode) {
-			showARToast('拡大しました', 1000);
-		}
-	};
-
-	// 縮小処理
-	const handleScaleDown = () => {
-		if (!modelViewerRef.current) return;
-
-		const success = scaleModel(modelViewerRef.current, 0.8);
-		if (success && isARMode) {
-			showARToast('縮小しました', 1000);
-		}
 	};
 
 	// ARモデルがない場合
@@ -158,27 +97,21 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 					alt={`${product.title} のARプレビュー`}
 					ar
 					ar-modes="webxr scene-viewer quick-look"
-					ar-scale={product.arModel.scale ? 'fixed' : 'auto'}
-					ar-placement={product.arModel.placement || 'wall'}
+					ar-scale="fixed"
+					ar-placement="wall"
 					camera-controls
 					touch-action="pan-y"
 					seamless-poster
-					shadow-intensity="0" // 壁紙なのでシャドウは不要
+					shadow-intensity="0"
 					environment-image="neutral"
 					exposure="0.8"
-					min-camera-orbit="auto auto auto"
-					max-camera-orbit="auto auto auto"
-					min-field-of-view="5deg"
-					max-field-of-view="90deg"
-					interaction-prompt="none" // 自動プロンプトを無効化
-					interpolation-decay="200" // よりスムーズな操作のため
 					style={{ width: '100%', height: '100%' }}
 					className="w-full h-full"
 				>
-					{/* AR起動ボタン（自前のデザイン） */}
+					{/* AR起動ボタン */}
 					<button
 						slot="ar-button"
-						className="ar-button absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all hover:bg-blue-700"
+						className="ar-button absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
 					>
 						<span>ARで壁に表示</span>
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -201,14 +134,17 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 				</div>
 			)}
 
-			{/* AR操作コントロール - 常に画面上に表示する（ARモード中でも） */}
-			{isModelViewerLoaded && (
-				<div className={`ar-controls-container ${isARMode ? 'ar-floating-controls' : 'absolute bottom-4 left-4 flex flex-col gap-2 z-10'}`}>
+			{/* 操作コントロール - ARモード外でのみ表示 */}
+			{isModelViewerLoaded && !isARMode && (
+				<div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
 					<button
-						id="scale-up"
-						className={`${isARMode ? 'ar-control-button' : 'p-2 bg-white text-blue-600 rounded-full shadow-md hover:bg-blue-50'}`}
+						className="p-2 bg-white text-blue-600 rounded-full shadow-md"
 						aria-label="拡大"
-						onClick={handleScaleUp}
+						onClick={() => {
+							if (modelViewerRef.current) {
+								scaleModel(modelViewerRef.current, 1.1);
+							}
+						}}
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 							<line x1="12" y1="5" x2="12" y2="19"></line>
@@ -216,35 +152,17 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 						</svg>
 					</button>
 					<button
-						id="scale-down"
-						className={`${isARMode ? 'ar-control-button' : 'p-2 bg-white text-blue-600 rounded-full shadow-md hover:bg-blue-50'}`}
+						className="p-2 bg-white text-blue-600 rounded-full shadow-md"
 						aria-label="縮小"
-						onClick={handleScaleDown}
+						onClick={() => {
+							if (modelViewerRef.current) {
+								scaleModel(modelViewerRef.current, 0.9);
+							}
+						}}
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 							<line x1="5" y1="12" x2="19" y2="12"></line>
 						</svg>
-					</button>
-					<button
-						id="toggle-placement"
-						className={`${isARMode ? 'ar-control-button' : 'p-2 bg-white text-blue-600 rounded-full shadow-md mt-2 hover:bg-blue-50'}`}
-						aria-label="配置モード切替"
-						title={placementMode === 'wall' ? '床に配置' : '壁に配置'}
-						onClick={handleTogglePlacement}
-					>
-						{placementMode === 'wall' ? (
-							// 壁配置アイコン
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-								<line x1="3" y1="9" x2="21" y2="9"></line>
-							</svg>
-						) : (
-							// 床配置アイコン
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-								<line x1="3" y1="15" x2="21" y2="15"></line>
-							</svg>
-						)}
 					</button>
 				</div>
 			)}
@@ -266,36 +184,21 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 						<li>認識された壁面に壁紙が表示されます</li>
 						<li>指でピンチイン・ピンチアウトして壁紙のサイズを調整</li>
 						<li>指でドラッグして位置を調整できます</li>
-						<li><strong>ARモード中でも</strong>画面左下の＋/−ボタンで拡大・縮小ができます</li>
 					</ol>
 					<button
 						onClick={hideInstructions}
-						className="mt-3 w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+						className="mt-3 w-full py-2 bg-blue-600 text-white rounded-md"
 					>
 						わかりました
 					</button>
 				</div>
 			)}
 
-			{/* ARモード中のガイダンスUI */}
-			{isARMode && (
-				<div className="fixed top-4 left-0 right-0 mx-auto w-max bg-black bg-opacity-70 text-white px-4 py-2 rounded-full text-sm z-50 flex items-center gap-2">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-						<circle cx="12" cy="12" r="10"></circle>
-						<line x1="12" y1="16" x2="12" y2="12"></line>
-						<line x1="12" y1="8" x2="12.01" y2="8"></line>
-					</svg>
-					<span>
-						画面左下のボタンで拡大・縮小できます
-					</span>
-				</div>
-			)}
-
 			{/* 閉じるボタン */}
-			{onClose && !isARMode && (
+			{onClose && (
 				<button
 					onClick={onClose}
-					className="absolute top-2 right-2 z-10 bg-white bg-opacity-80 rounded-full p-2 shadow-md hover:bg-gray-100"
+					className="absolute top-2 right-2 z-10 bg-white bg-opacity-80 rounded-full p-2 shadow-md"
 					aria-label="閉じる"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
