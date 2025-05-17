@@ -73,31 +73,25 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art001-main",
-				url: "/images/products/urban-horizon-main.jpg",
+				url: "/images/products/urban-horizon-main.png",
 				alt: "Urban Horizon メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art001-thumb1",
-				url: "/images/products/urban-horizon-thumb1.jpg",
+				url: "/images/products/urban-horizon-thumb1.png",
 				alt: "リビングルームでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
-				id: "art001-thumb2",
-				url: "/images/products/urban-horizon-thumb2.jpg",
-				alt: "オフィスでの設置例",
-				type: "lifestyle",
-				order: 3
-			},
-			{
 				id: "art001-detail",
-				url: "/images/products/urban-horizon-detail.jpg",
+				//url: "/images/products/urban-horizon-detail.jpg",
+				url: "/images/products/urban-horizon-thumb1.png",
 				alt: "質感の詳細",
 				type: "detail",
-				order: 4
+				order: 3
 			}
 		],
 		features: [
@@ -196,21 +190,22 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art003-main",
-				url: "/images/products/geometric-dreams-main.jpg",
+				url: "/images/products/geometric-dreams-main.png",
 				alt: "Geometric Dreams メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art003-thumb1",
-				url: "/images/products/geometric-dreams-thumb1.jpg",
+				url: "/images/products/geometric-dreams-thumb1.png",
 				alt: "ダイニングでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art003-thumb2",
-				url: "/images/products/geometric-dreams-thumb2.jpg",
+				url: "/images/products/geometric-dreams-thumb1.png",
+				//url: "/images/products/geometric-dreams-thumb2.jpg",
 				alt: "ワークスペースでの設置例",
 				type: "lifestyle",
 				order: 3
