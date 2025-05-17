@@ -3,7 +3,7 @@ import { Container } from "./container";
 
 export function Navbar() {
 	return (
-		<header className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-sm border-b border-neutral-100 z-50">
+		<header className="top-0 left-0 w-full bg-white/90 backdrop-blur-sm border-b border-neutral-100 z-50">
 			<Container>
 				<div className="flex items-center justify-between h-16 md:h-20">
 					<Link href="/" className="font-accent text-2xl font-bold">

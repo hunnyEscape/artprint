@@ -61,40 +61,6 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, [product, setActiveProduct, isVisible]);
 
-	// 製品レイアウトタイプに応じたスタイル
-	const styles = useMemo(() => {
-		const layoutType = product.layoutType as 'standard' | 'dark' | 'minimalist' | 'immersive';
-		const accentColor = product.accentColor || '#3B82F6';
-
-		switch (layoutType) {
-			case 'dark':
-				return {
-					contentBg: 'bg-neutral-900',
-					textColor: 'text-white',
-					accentGradient: `linear-gradient(to right, ${accentColor}22, ${accentColor}44)`,
-				};
-			case 'minimalist':
-				return {
-					contentBg: 'bg-white',
-					textColor: 'text-neutral-900',
-					accentGradient: `linear-gradient(to right, ${accentColor}11, ${accentColor}22)`,
-				};
-			case 'immersive':
-				return {
-					contentBg: 'bg-black',
-					textColor: 'text-white',
-					accentGradient: `linear-gradient(135deg, ${accentColor}33, transparent)`,
-				};
-			case 'standard':
-			default:
-				return {
-					contentBg: 'bg-neutral-100',
-					textColor: 'text-neutral-900',
-					accentGradient: `linear-gradient(to right, ${accentColor}22, transparent)`,
-				};
-		}
-	}, [product.layoutType, product.accentColor]);
-
 	return (
 		<section
 			id={sectionId}
@@ -102,14 +68,14 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 			className="product-showcase relative"
 		>
 			{/* タイトルセクション - 最初の画面で表示するための高さ設定 */}
-			<div className="relative h-[100vh] flex items-end">
-				<div className="absolute left-0 bottom-0 w-full p-8">
+			<div className="relative h-[150vh] flex items-center justify-center">
+				<div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
 					<Container>
-						<h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg mb-2">
+						<h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg mb-4">
 							{product.title}
 						</h2>
 						{product.subtitle && (
-							<p className="text-xl text-white/90 max-w-xl drop-shadow-md">
+							<p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
 								{product.subtitle}
 							</p>
 						)}
@@ -120,10 +86,7 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 			{/* 製品紹介セクション */}
 			<div
 				ref={contentRef}
-				className={`relative w-full min-h-screen ${styles.contentBg} ${styles.textColor}`}
-				style={{
-					background: styles.accentGradient,
-				}}
+				className="relative w-full min-h-screen bg-white text-neutral-900"
 			>
 				<Container>
 					<div className="py-20">

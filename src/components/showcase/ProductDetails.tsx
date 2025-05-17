@@ -10,59 +10,16 @@ interface ProductDetailsProps {
 }
 
 export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
-	// レイアウトに応じたスタイルを取得
-	const getLayoutStyles = (product: Product) => {
-		const layoutType = product.layoutType as 'standard' | 'dark' | 'minimalist' | 'immersive';
-
-		switch (layoutType) {
-			case 'dark':
-				return {
-					wrapper: 'bg-neutral-900/85 backdrop-blur-lg text-white',
-					title: 'text-white',
-					description: 'text-neutral-300',
-					price: 'text-white',
-					button: 'bg-accent-500 hover:bg-accent-600 text-white',
-					features: 'bg-neutral-800 border-neutral-700',
-					accent: product.accentColor || '#FF5C5C'
-				};
-
-			case 'minimalist':
-				return {
-					wrapper: 'bg-white/90 backdrop-blur-lg',
-					title: 'text-neutral-900',
-					description: 'text-neutral-600',
-					price: 'text-neutral-900',
-					button: 'bg-neutral-900 hover:bg-neutral-800 text-white',
-					features: 'bg-neutral-50 border-neutral-100',
-					accent: product.accentColor || '#404040'
-				};
-
-			case 'immersive':
-				return {
-					wrapper: `bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-sm text-white`,
-					title: 'text-white',
-					description: 'text-white/80',
-					price: 'text-white',
-					button: 'bg-white hover:bg-neutral-100 text-neutral-900',
-					features: 'bg-white/10 backdrop-blur-sm border-white/20',
-					accent: product.accentColor || '#3B82F6'
-				};
-
-			case 'standard':
-			default:
-				return {
-					wrapper: 'bg-white/90 backdrop-blur-lg',
-					title: 'text-neutral-900',
-					description: 'text-neutral-700',
-					price: 'text-neutral-900',
-					button: 'bg-primary-500 hover:bg-primary-600 text-white',
-					features: 'bg-neutral-50 border-neutral-200',
-					accent: product.accentColor || '#3B82F6'
-				};
-		}
+	// 一貫した白背景スタイルを使用
+	const styles = {
+		wrapper: 'bg-white/90 backdrop-blur-lg',
+		title: 'text-neutral-900',
+		description: 'text-neutral-700',
+		price: 'text-neutral-900',
+		button: 'bg-primary-500 hover:bg-primary-600 text-white',
+		features: 'bg-neutral-50 border-neutral-200',
+		accent: product.accentColor || '#3B82F6'
 	};
-
-	const styles = getLayoutStyles(product);
 
 	return (
 		<div className={`rounded-xl ${styles.wrapper} p-8 shadow-xl max-w-2xl mx-auto transition-all duration-500`}>
@@ -148,14 +105,14 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 			<div className="mb-6">
 				<h4 className={`font-medium mb-2 ${styles.title}`}>サイズ</h4>
 				<div className="flex items-center gap-4">
-					<div className={`border ${styles.features === 'bg-neutral-800 border-neutral-700' ? 'border-neutral-700' : 'border-neutral-200'} rounded-lg p-3 text-center min-w-[80px]`}>
+					<div className="border border-neutral-200 rounded-lg p-3 text-center min-w-[80px]">
 						<div className={`text-sm ${styles.description}`}>幅</div>
 						<div className={`font-medium ${styles.title}`}>
 							{product.dimensions.width}
 							<span className="text-sm">{product.dimensions.unit}</span>
 						</div>
 					</div>
-					<div className={`border ${styles.features === 'bg-neutral-800 border-neutral-700' ? 'border-neutral-700' : 'border-neutral-200'} rounded-lg p-3 text-center min-w-[80px]`}>
+					<div className="border border-neutral-200 rounded-lg p-3 text-center min-w-[80px]">
 						<div className={`text-sm ${styles.description}`}>高さ</div>
 						<div className={`font-medium ${styles.title}`}>
 							{product.dimensions.height}
@@ -177,10 +134,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 				</ECLinkButton>
 
 				<button
-					className={`py-3 px-8 text-lg font-medium rounded-md border ${styles.wrapper === 'bg-neutral-900/85 backdrop-blur-lg text-white'
-						? 'border-neutral-700 text-white hover:bg-neutral-800'
-						: 'border-neutral-300 text-neutral-700 hover:bg-neutral-100'
-						} transition-colors`}
+					className="py-3 px-8 text-lg font-medium rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-100 transition-colors"
 					onClick={() => alert('お気に入りに追加しました！')}
 				>
 					<span className="flex items-center justify-center gap-2">
