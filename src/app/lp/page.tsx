@@ -13,7 +13,6 @@ import { GalleryPreviewSection } from "@/components/sections/gallery-preview-sec
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { FAQSection } from "@/components/sections/faq-section";
 import { CTASection } from "@/components/sections/cta-section";
-import { ShowcaseSection } from "@/components/sections/ShowcaseSection";
 import { PageAnalytics } from "@/components/analytics/page-analytics";
 import { Metadata } from "next";
 
@@ -93,9 +92,6 @@ export default function LandingPage() {
 			</div>
 			<div id="cta-section" data-section-name="CTA">
 				<CTASection />
-			</div>
-			<div id="showcase-section" data-section-name="商品ショーケース">
-				<ShowcaseSection />
 			</div>
 		</>
 	);
