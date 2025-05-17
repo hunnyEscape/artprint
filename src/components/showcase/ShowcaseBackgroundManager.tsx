@@ -5,19 +5,44 @@ import { useShowcase } from '@/contexts/ShowcaseContext';
 import { Product } from '@/data/featured-products';
 import Image from 'next/image';
 
-// 単一のグローバル背景を管理するコンポーネント
 export const ShowcaseBackgroundManager: React.FC = () => {
 	const { activeProduct } = useShowcase();
 	const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+	const [previousProduct, setPreviousProduct] = useState<Product | null>(null);
 	const [imageLoaded, setImageLoaded] = useState(false);
+	const [isTransitioning, setIsTransitioning] = useState(false);
 
-	// アクティブな製品が変わったら直接背景を更新
+	// 背景トランジションを管理
 	useEffect(() => {
 		if (activeProduct && (!currentProduct || currentProduct.id !== activeProduct.id)) {
-			console.log("背景更新:", activeProduct.title);
+			console.log("背景トランジション開始:", activeProduct.title);
+			
+			// 現在の製品を前の製品として保存
+			if (currentProduct) {
+				setPreviousProduct(currentProduct);
+			}
+			
+			// トランジション状態を設定
+			setIsTransitioning(true);
+			
+			// 新しい製品を設定
 			setCurrentProduct(activeProduct);
+			
+			// トランジション完了後に前の背景をクリア
+			const timer = setTimeout(() => {
+				setIsTransitioning(false);
+				setPreviousProduct(null);
+			}, 800); // トランジション時間に合わせる
+			
+			return () => clearTimeout(timer);
 		}
 	}, [activeProduct, currentProduct]);
+
+	// メイン画像URLを取得する関数
+	const getMainImage = (product: Product) => {
+		const mainImage = product.images.find(img => img.type === 'main');
+		return mainImage?.url || '';
+	};
 
 	// 背景がない場合のフォールバック
 	if (!currentProduct) {
@@ -29,22 +54,21 @@ export const ShowcaseBackgroundManager: React.FC = () => {
 		);
 	}
 
-	// メイン画像URLを取得
-	const getMainImage = (product: Product) => {
-		const mainImage = product.images.find(img => img.type === 'main');
-		return mainImage?.url || '';
-	};
-
 	const currentImageUrl = getMainImage(currentProduct);
+	const previousImageUrl = previousProduct ? getMainImage(previousProduct) : '';
 
 	return (
 		<div
 			className="fixed top-0 left-0 w-full h-screen overflow-hidden"
 			style={{ zIndex: -1 }}
 		>
-			{/* 単一背景画像 - トランジション無し */}
-			{currentImageUrl ? (
-				<div className="absolute inset-0">
+			{/* 現在の背景画像 */}
+			{currentImageUrl && (
+				<div 
+					className={`absolute inset-0 transition-opacity duration-800 ease-in-out ${
+						isTransitioning ? 'opacity-100' : 'opacity-100'
+					}`}
+				>
 					<Image
 						src={currentImageUrl}
 						alt={currentProduct.title}
@@ -62,16 +86,23 @@ export const ShowcaseBackgroundManager: React.FC = () => {
 					{/* 均一な薄い透明のオーバーレイ */}
 					<div className="absolute inset-0 bg-black/40" />
 				</div>
-			) : (
-				// 画像がない場合はグラデーション背景
-				<div
-					className="absolute inset-0"
-					style={{
-						background: `linear-gradient(135deg, ${currentProduct.accentColor || '#3B82F6'}33, ${currentProduct.accentColor || '#3B82F6'}11)`,
-					}}
+			)}
+			
+			{/* 前の背景画像 (トランジション中のみ表示) */}
+			{previousImageUrl && isTransitioning && (
+				<div 
+					className="absolute inset-0 transition-opacity duration-800 ease-in-out opacity-0"
 				>
+					<Image
+						src={previousImageUrl}
+						alt={previousProduct?.title || ""}
+						fill
+						sizes="100vw"
+						className="object-cover"
+					/>
+					
 					{/* 均一な薄い透明のオーバーレイ */}
-					<div className="absolute inset-0 bg-black/30" />
+					<div className="absolute inset-0 bg-black/40" />
 				</div>
 			)}
 			

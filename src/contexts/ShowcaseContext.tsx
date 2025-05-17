@@ -3,25 +3,29 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Product } from '@/data/featured-products';
 
-// コンテキストの型定義
+// コンテキストの型定義を拡張
 interface ShowcaseContextType {
   activeSection: string | null;
   activeSectionIndex: number;
   activeProduct: Product | null;
   nextProduct: Product | null;
-  previousProduct: Product | null; // 前の製品を追加
+  previousProduct: Product | null;
   setActiveSection: (sectionId: string) => void;
   setActiveSectionIndex: (index: number) => void;
   setActiveProduct: (product: Product) => void;
   setNextProduct: (product: Product | null) => void;
-  setPreviousProduct: (product: Product | null) => void; // 前の製品を設定する関数を追加
+  setPreviousProduct: (product: Product | null) => void;
   registerSection: (sectionId: string, products: Product[]) => void;
   unregisterSection: (sectionId: string) => void;
   sections: Record<string, { products: Product[] }>;
   allProducts: Product[];
+  // 新しく追加した機能
+  scrollDirection: 'up' | 'down';
+  isTransitioning: boolean;
+  setIsTransitioning: (isTransitioning: boolean) => void;
 }
 
-// デフォルト値
+// デフォルト値を拡張
 const defaultContext: ShowcaseContextType = {
   activeSection: null,
   activeSectionIndex: 0,
@@ -36,7 +40,11 @@ const defaultContext: ShowcaseContextType = {
   registerSection: () => {},
   unregisterSection: () => {},
   sections: {},
-  allProducts: []
+  allProducts: [],
+  // 新しいデフォルト値
+  scrollDirection: 'down',
+  isTransitioning: false,
+  setIsTransitioning: () => {}
 };
 
 // コンテキスト作成
@@ -51,10 +59,45 @@ export const ShowcaseProvider = ({ children, initialProducts = [] }: { children:
     nextProduct: null as Product | null,
     previousProduct: null as Product | null,
     sections: {} as Record<string, { products: Product[] }>,
-    allProducts: initialProducts
+    allProducts: initialProducts,
+    // 新しい状態
+    scrollDirection: 'down' as 'up' | 'down',
+    isTransitioning: false
   });
   
-  const { activeSection, activeSectionIndex, activeProduct, nextProduct, previousProduct, sections, allProducts } = state;
+  const { 
+    activeSection, 
+    activeSectionIndex, 
+    activeProduct, 
+    nextProduct, 
+    previousProduct, 
+    sections, 
+    allProducts, 
+    scrollDirection, 
+    isTransitioning 
+  } = state;
+
+  // スクロール方向の検出
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const direction = currentScrollY > lastScrollY ? 'down' : 'up';
+      
+      if (scrollDirection !== direction) {
+        setState(prev => ({
+          ...prev,
+          scrollDirection: direction
+        }));
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrollDirection]);
 
   // アクティブセクションを設定
   const setActiveSection = useCallback((sectionId: string) => {
@@ -72,12 +115,26 @@ export const ShowcaseProvider = ({ children, initialProducts = [] }: { children:
     }));
   }, []);
 
+  // トランジション状態設定関数
+  const setIsTransitioning = useCallback((value: boolean) => {
+    setState(prev => ({
+      ...prev,
+      isTransitioning: value
+    }));
+  }, []);
+
   // アクティブ製品を設定（同じ製品の場合は更新しない）
   const setActiveProduct = useCallback((product: Product | null) => {
     // 同じ製品が選択された場合は更新しない（IDで比較）
     if (activeProduct && product && activeProduct.id === product.id) {
       return;
     }
+    
+    // トランジション開始
+    setState(prev => ({
+      ...prev,
+      isTransitioning: true
+    }));
     
     setState(prev => {
       // 更新されるアクティブな製品情報
@@ -113,6 +170,14 @@ export const ShowcaseProvider = ({ children, initialProducts = [] }: { children:
         ...updatedState
       };
     });
+    
+    // トランジション完了後にフラグをリセット
+    setTimeout(() => {
+      setState(prev => ({
+        ...prev,
+        isTransitioning: false
+      }));
+    }, 800); // トランジション時間に合わせる
   }, [activeProduct, allProducts]);
 
   // 次の製品を明示的に設定する関数
@@ -232,7 +297,11 @@ export const ShowcaseProvider = ({ children, initialProducts = [] }: { children:
         registerSection,
         unregisterSection,
         sections,
-        allProducts
+        allProducts,
+        // 新しく追加した値
+        scrollDirection,
+        isTransitioning,
+        setIsTransitioning
       }}
     >
       {children}

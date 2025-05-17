@@ -230,3 +230,20 @@ html {
 .fade-in {
   animation: fadeIn 0.7s ease-in-out forwards;
 }
+
+
+/* global.css または関連するスタイルシートに追加 */
+.bg-fade-enter {
+  opacity: 0;
+}
+.bg-fade-enter-active {
+  opacity: 1;
+  transition: opacity 800ms ease-in-out;
+}
+.bg-fade-exit {
+  opacity: 1;
+}
+.bg-fade-exit-active {
+  opacity: 0;
+  transition: opacity 800ms ease-in-out;
+}

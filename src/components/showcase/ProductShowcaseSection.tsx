@@ -20,10 +20,14 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 	index,
 	totalProducts
 }) => {
-	const { setActiveProduct } = useShowcase();
+	const { setActiveProduct, isTransitioning, activeProduct } = useShowcase();
 	const sectionRef = useRef<HTMLDivElement>(null);
 	const titleSectionRef = useRef<HTMLDivElement>(null);
+	const titleTriggerRef = useRef<HTMLDivElement>(null); // タイトルセクションに関連付けられたトリガー
+	const detailsSectionRef = useRef<HTMLDivElement>(null);
+
 	const [isActive, setIsActive] = useState(false);
+	const [lastTriggerTime, setLastTriggerTime] = useState(0);
 
 	// 各製品セクションの一意のID
 	const sectionId = useMemo(() => `product-${product.id}`, [product.id]);
@@ -36,41 +40,55 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 
 	const isImageLoaded = useImagePreload(mainImageUrl);
 
-	// セクションが画面中央に来ているかを監視
+	// トリガーハンドラー - 即時応答するよう最適化
+	const handleProductTrigger = () => {
+		const now = Date.now();
+		if (
+			isTransitioning ||
+			now - lastTriggerTime < 500 || // デバウンス時間
+			(activeProduct && activeProduct.id === product.id)
+		) {
+			return;
+		}
+
+		// console.log(`${product.title} のトリガー検出: 背景更新`);
+		setLastTriggerTime(now);
+		setIsActive(true);
+
+		// 即時に製品をアクティブに設定
+		setActiveProduct(product);
+	};
+
+	// タイトルトリガーの監視
 	useEffect(() => {
-		const handleScroll = () => {
-			if (!titleSectionRef.current) return;
+		if (!titleTriggerRef.current) return;
 
-			const rect = titleSectionRef.current.getBoundingClientRect();
-			const viewportHeight = window.innerHeight;
-			
-			// セクションの中央と画面の中央のY座標を計算
-			const sectionCenterY = rect.top + rect.height / 2;
-			const viewportCenterY = viewportHeight / 2;
-			
-			// セクションの中央が画面の中央に近いかどうかをチェック
-			// 許容誤差を設定して、完全に一致しなくても「中央」と見なす
-			const tolerance = viewportHeight * 0.2; // 画面高さの20%の許容範囲
-			const isInCenter = Math.abs(sectionCenterY - viewportCenterY) < tolerance;
-			
-			if (isInCenter && !isActive) {
-				setIsActive(true);
-				setActiveProduct(product);
-				console.log(`${product.title} が画面中央に配置されました - 背景をアクティブ化`);
-			} else if (!isInCenter && isActive) {
-				setIsActive(false);
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						// console.log(`${product.title} - タイトルトリガー検出: 背景更新`);
+						handleProductTrigger();
+					}
+				});
+			},
+			{
+				// トリガーを少し大きめに設定して、タイトルセクションの前で検出
+				threshold: 0 // 1ピクセルでも表示されたら反応
 			}
-		};
+		);
 
-		window.addEventListener('scroll', handleScroll);
-		window.addEventListener('resize', handleScroll);
-		handleScroll(); // 初期チェック
-		
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-			window.removeEventListener('resize', handleScroll);
-		};
-	}, [product, setActiveProduct, isActive]);
+		observer.observe(titleTriggerRef.current);
+
+		return () => observer.disconnect();
+	}, [product, handleProductTrigger]);
+
+	// 非アクティブ化の処理
+	useEffect(() => {
+		if (activeProduct && activeProduct.id !== product.id && isActive) {
+			setIsActive(false);
+		}
+	}, [activeProduct, product.id, isActive]);
 
 	return (
 		<section
@@ -81,11 +99,23 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 			data-product-id={product.id}
 			data-is-active={isActive}
 		>
-			{/* タイトルセクション - 最初の画面で表示するための高さ設定 */}
-			<div 
+			{/* タイトルセクション */}
+			<div
 				ref={titleSectionRef}
 				className="relative h-[120vh] flex items-center justify-center"
 			>
+				{/* タイトルセクション上にオーバーレイするトリガーゾーン */}
+				<div
+					ref={titleTriggerRef}
+					className="absolute inset-0 -top-[500px] -bottom-[500px]" // 上下に300pxはみ出す
+					aria-hidden="true"
+					data-trigger="title"
+					style={{
+						pointerEvents: 'none',
+						opacity: 0
+					}}
+				/>
+
 				<div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
 					<Container>
 						<h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg mb-4">
@@ -103,6 +133,7 @@ export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
 			{/* 製品紹介セクション */}
 			<div
 				className="relative w-full min-h-screen bg-white text-neutral-900"
+				ref={detailsSectionRef}
 			>
 				<Container>
 					<div className="py-20">
