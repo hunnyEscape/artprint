@@ -1,4 +1,5 @@
 // src/components/showcase/ar-controls.ts
+// シンプル化した実装
 
 // ARセッション中のモデルをスケーリングする関数
 export function scaleModel(modelViewer: HTMLElement, factor: number) {
