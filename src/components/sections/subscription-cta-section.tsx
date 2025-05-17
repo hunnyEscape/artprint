@@ -8,7 +8,7 @@ export function SubscriptionCTASection() {
 	const [showYearly, setShowYearly] = useState(false);
 
 	// 月額と年額の価格設定
-	const monthlyPrice = 2498;
+	const monthlyPrice = 2480;
 	const yearlyPrice = 24980; // 12ヶ月分 - 1ヶ月分の割引
 	const perPieceMonthly = Math.floor(monthlyPrice / 3);
 	const perPieceYearly = Math.floor(yearlyPrice / 36); // 年間36枚

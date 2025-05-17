@@ -15,6 +15,10 @@ import { FAQSection } from "@/components/sections/faq-section";
 import { CTASection } from "@/components/sections/cta-section";
 import { PageAnalytics } from "@/components/analytics/page-analytics";
 import { Metadata } from "next";
+import { featuredProducts } from '@/data/featured-products';
+import { ProductShowcaseSection } from '@/components/showcase/ProductShowcaseSection';
+import { ShowcaseProvider } from '@/contexts/ShowcaseContext';
+import { ShowcaseBackgroundManager } from '@/components/showcase/ShowcaseBackgroundManager';
 
 export const metadata: Metadata = {
 	title: 'Artpaper | 貼るだけで部屋の世界観が変わる大型AIアート',
@@ -92,6 +96,27 @@ export default function LandingPage() {
 			</div>
 			<div id="cta-section" data-section-name="CTA">
 				<CTASection />
+			</div>
+			<div id="gallery-section" data-section-name="ギャラリー">
+				<ShowcaseProvider initialProducts={featuredProducts}>
+					{/* グローバル背景マネージャー */}
+					<ShowcaseBackgroundManager />
+
+					<div className="showcase-gallery">
+						{/* 各壁紙製品に対してセクションを順番に表示 */}
+						{featuredProducts.map((product, index) => (
+							<ProductShowcaseSection
+								key={product.id}
+								product={product}
+								index={index}
+								totalProducts={featuredProducts.length}
+							/>
+						))}
+
+						{/* 余白を追加して最後のセクションが完全に表示されるようにする */}
+						<div className="h-[50vh]"></div>
+					</div>
+				</ShowcaseProvider>
 			</div>
 		</>
 	);

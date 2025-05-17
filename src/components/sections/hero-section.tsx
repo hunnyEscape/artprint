@@ -21,7 +21,7 @@ export function HeroSection() {
 								href="/gallery"
 								className="bg-accent-500 text-white px-8 py-3 rounded-md font-medium text-lg hover:bg-accent-600 transition-colors inline-block text-center"
 							>
-								ラインナップを見る
+								無料で試す
 							</Link>
 							<Link
 								href="/how-it-works"
