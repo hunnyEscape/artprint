@@ -1,6 +1,7 @@
 /* TailwindCSS v4用のglobals.css */
 @import "tailwindcss";
 
+
 /* テーマ設定 */
 @theme {
 	--background: 0 0% 98%;

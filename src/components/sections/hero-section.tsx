@@ -6,29 +6,42 @@ export function HeroSection() {
 	return (
 		<section className="relative pt-20 pb-16 md:pt-28 md:pb-24 overflow-hidden">
 			<Container>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+				<div className="text-white drop-shadow-lg grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 					<div className="order-2 md:order-1">
 						<h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
 							貼るだけ<span className="text-accent-500">3分</span>、<br />
 							部屋が変わる。
 						</h1>
-						<p className="text-lg md:text-xl text-neutral-700 mb-8 max-w-lg">
-							賃貸OK・剥がしても跡が残らない<span className="font-medium">アートペーパー</span>。
-							150種類以上のデザインから選んで、あなたの空間を一新しませんか？
+						<p className="text-lg md:text-xl mb-8 max-w-lg">
+							賃貸OK・剥がしても跡が残らない<span className="font-medium">アートペーパー</span>
+							<br />デザインは150種類以上<br />あなたの空間を一新しませんか？
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4">
 							<Link
 								href="/gallery"
-								className="bg-accent-500 text-white px-8 py-3 rounded-md font-medium text-lg hover:bg-accent-600 transition-colors inline-block text-center"
+								className="
+									inline-block text-center
+									px-8 py-3 rounded-md font-medium text-lg
+									bg-accent-500 text-white border border-accent-500
+									hover:bg-accent-600 hover:border-accent-600
+									focus:outline-none focus:ring-4 focus:ring-accent-300
+									transition-all duration-200
+								"
 							>
 								無料で試す
 							</Link>
 							<Link
 								href="/how-it-works"
-								className="border border-neutral-300 px-8 py-3 rounded-md font-medium text-lg hover:bg-neutral-100 transition-colors inline-block text-center"
+								className="
+									px-8 py-3 rounded-md font-medium text-lg text-accent-500
+									border border-accent-500 hover:bg-accent-50
+									focus:outline-none focus:ring-4 focus:ring-accent-300/40
+									transition-all duration-200
+								"
 							>
 								使い方を見る
 							</Link>
+
 						</div>
 					</div>
 					<div className="order-1 md:order-2 relative">
