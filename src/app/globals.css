@@ -210,3 +210,23 @@
 	white-space: nowrap;
 	border: 0;
 }
+
+/* スムーススクロールは残しておく（オプション） */
+html {
+  scroll-behavior: smooth;
+}
+
+/* スナップ設定を削除 */
+.showcase-gallery {
+  overflow-y: auto;
+}
+
+/* 背景画像フェードアニメーション */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.7s ease-in-out forwards;
+}

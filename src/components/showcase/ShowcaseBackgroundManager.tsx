@@ -2,69 +2,77 @@
 
 import React, { useEffect, useState } from 'react';
 import { useShowcase } from '@/contexts/ShowcaseContext';
+import { Product } from '@/data/featured-products';
 import Image from 'next/image';
-import { getMainImageUrl } from '@/data/featured-products';
 
+// 単一のグローバル背景を管理するコンポーネント
 export const ShowcaseBackgroundManager: React.FC = () => {
-	const { activeSection, activeProduct, sections } = useShowcase();
-	const [previousImage, setPreviousImage] = useState<string | null>(null);
-	const [currentImage, setCurrentImage] = useState<string | null>(null);
-	const [isTransitioning, setIsTransitioning] = useState(false);
+	const { activeSection, activeProduct } = useShowcase();
+	const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
 
-	// 背景画像の更新
+	// アクティブな製品が変わったら背景を更新
 	useEffect(() => {
-		if (!activeProduct) return;
-
-		const mainImageUrl = getMainImageUrl(activeProduct);
-
-		if (currentImage !== mainImageUrl) {
-			// 前の画像を保存してフェードアウト効果に使用
-			setPreviousImage(currentImage);
-			setCurrentImage(mainImageUrl);
-			setIsTransitioning(true);
-
-			// トランジション終了後にpreviousImageをクリア
-			const timer = setTimeout(() => {
-				setIsTransitioning(false);
-				setPreviousImage(null);
-			}, 500); // 500msのトランジション
-
-			return () => clearTimeout(timer);
+		if (activeProduct && (currentProduct?.id !== activeProduct.id)) {
+			console.log("背景更新:", activeProduct.title);
+			setCurrentProduct(activeProduct);
 		}
-	}, [activeProduct, currentImage]);
+	}, [activeProduct, currentProduct]);
 
-	if (!activeProduct || !currentImage) return null;
+	// 背景がない場合のフォールバック
+	if (!currentProduct) {
+		return (
+			<div
+				className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-gray-800 to-gray-900"
+				style={{ zIndex: -1 }}
+			/>
+		);
+	}
+
+	// メイン画像URLを取得
+	const mainImage = currentProduct.images.find(img => img.type === 'main');
+	const imageUrl = mainImage?.url || '';
+
+	// デバッグ情報
+	console.log("現在の背景:", imageUrl);
 
 	return (
-		<div className="fixed inset-0 z-[-1] h-[150vh] overflow-hidden">
-			{/* 前の背景画像（フェードアウト） */}
-			{isTransitioning && previousImage && (
-				<div className="absolute inset-0 w-full h-full transition-opacity duration-500 opacity-0">
+		<div
+			className="fixed top-0 left-0 w-full h-screen overflow-hidden"
+			style={{ zIndex: -1 }}
+		>
+			{/* 画像がある場合は背景として表示 */}
+			{imageUrl ? (
+				<div className="absolute inset-0">
 					<Image
-						src={previousImage}
-						alt="Previous showcase background"
+						src={imageUrl}
+						alt={currentProduct.title}
 						fill
+						priority
 						sizes="100vw"
 						className="object-cover"
-						priority
+						onError={(e) => {
+							console.error("画像読み込みエラー:", imageUrl);
+							e.currentTarget.style.display = 'none';
+						}}
 					/>
 				</div>
+			) : (
+				// 画像がない場合はグラデーション背景
+				<div
+					className="absolute inset-0"
+					style={{
+						background: `linear-gradient(135deg, ${currentProduct.accentColor || '#3B82F6'}33, ${currentProduct.accentColor || '#3B82F6'}11)`,
+					}}
+				/>
 			)}
 
-			{/* 現在の背景画像 */}
-			<div className={`absolute inset-0 w-full h-full ${isTransitioning ? 'transition-opacity duration-500 opacity-100' : ''}`}>
-				<Image
-					src={currentImage}
-					alt={activeProduct.title}
-					fill
-					sizes="100vw"
-					className="object-cover"
-					priority
-				/>
-			</div>
-
-			{/* オーバーレイ（オプション） */}
-			<div className="absolute inset-0 bg-black/10" />
+			{/* オーバーレイグラデーション */}
+			<div
+				className="absolute inset-0"
+				style={{
+					background: `linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.8))`,
+				}}
+			/>
 		</div>
 	);
 };

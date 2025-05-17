@@ -132,21 +132,21 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art002-main",
-				url: "/images/products/nature-harmony-main.jpg",
+				url: "/images/products/nature-harmony-main.png",
 				alt: "Nature Harmony メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art002-thumb1",
-				url: "/images/products/nature-harmony-thumb1.jpg",
+				url: "/images/products/nature-harmony-thumb1.png",
 				alt: "ベッドルームでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art002-thumb2",
-				url: "/images/products/nature-harmony-thumb2.jpg",
+				url: "/images/products/nature-harmony-thumb2.png",
 				alt: "リビングでの設置例",
 				type: "lifestyle",
 				order: 3
@@ -253,21 +253,21 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art004-main",
-				url: "/images/products/cosmic-journey-main.jpg",
+				url: "/images/products/cosmic-journey-main.png",
 				alt: "Cosmic Journey メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art004-thumb1",
-				url: "/images/products/cosmic-journey-thumb1.jpg",
+				url: "/images/products/cosmic-journey-thumb1.png",
 				alt: "寝室での設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art004-thumb2",
-				url: "/images/products/cosmic-journey-thumb2.jpg",
+				url: "/images/products/cosmic-journey-thumb2.png",
 				alt: "リビングでの設置例",
 				type: "lifestyle",
 				order: 3
