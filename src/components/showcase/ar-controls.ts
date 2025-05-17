@@ -40,7 +40,8 @@ export function togglePlacementMode(modelViewer: HTMLElement) {
   }
 }
 
-// デバイスに応じてAR体験をカスタマイズする
+// ar-controls.ts に以下の関数を追加
+
 export function optimizeARExperience(modelViewer: HTMLElement) {
   try {
     // iOSデバイスの検出
@@ -49,9 +50,37 @@ export function optimizeARExperience(modelViewer: HTMLElement) {
     if (isIOS) {
       // iOS特有の設定
       modelViewer.setAttribute('ar-scale', 'auto');
+      modelViewer.setAttribute('ios-src', modelViewer.getAttribute('ios-src') || '');
+      modelViewer.setAttribute('ar', 'quick-look');
     } else {
-      // Android特有の設定
-      modelViewer.setAttribute('ar-scale', 'fixed');
+      // Android特有の設定 - Scene Viewer用の設定
+      modelViewer.setAttribute('ar-scale', 'auto');
+      modelViewer.setAttribute('ar', 'scene-viewer');
+      
+      // ARボタンを取得してカスタムURLパラメータを追加
+      const arButton = modelViewer.querySelector('[slot="ar-button"]');
+      if (arButton) {
+        arButton.addEventListener('click', () => {
+          // Scene Viewerに追加のパラメータを渡す
+          // これにより、Android ARでの操作性が向上する
+          try {
+            // @ts-ignore
+            if (modelViewer.availableActiveSources && modelViewer.availableActiveSources.includes('scene-viewer')) {
+              // @ts-ignore
+              const modelUrl = modelViewer.src;
+              
+              // Scene Viewerカスタムパラメータ付きURL
+              // モード: resizable - サイズ変更可能、link - QRコードなし
+              const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}&mode=resizable&resizable=true&link=false&title=${encodeURIComponent('ARプレビュー')}&sound=false#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end;`;
+              
+              // デバッグログ
+              console.log('Scene Viewer URL設定:', sceneViewerUrl);
+            }
+          } catch (error) {
+            console.error('Scene Viewer URL生成エラー:', error);
+          }
+        });
+      }
       
       // Android向けに壁面配置を最適化
       modelViewer.setAttribute('ar-placement', 'wall');

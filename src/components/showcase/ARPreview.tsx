@@ -9,6 +9,7 @@ interface ARPreviewProps {
 	onClose?: () => void;
 }
 
+
 export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 	const [isModelViewerLoaded, setIsModelViewerLoaded] = useState(false);
 	const [isARSupported, setIsARSupported] = useState(false);
@@ -81,6 +82,9 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 	};
 
 	// model-viewerのイベントリスナー設定
+	// ARPreview.tsx を修正
+
+	// model-viewerのイベントリスナー設定を修正
 	useEffect(() => {
 		if (!modelViewerRef.current || !isModelViewerLoaded) return;
 
@@ -90,13 +94,47 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 		const handleARStatus = (event: any) => {
 			if (event.detail.status === 'session-started') {
 				setIsARMode(true);
-				console.log('ARモードを開始しました。画面左下のボタンで大きさと配置を調整できます。');
+
+				// ARセッションパラメータの設定
+				try {
+					// @ts-ignore - model-viewerのカスタムメソッド
+					if (modelViewer.arSession) {
+						// AR内での操作性を向上させるパラメータを設定
+						// @ts-ignore
+						modelViewer.arSession.updateWorldSensingState({
+							planeDetectionState: {
+								enabled: true
+							}
+						});
+					}
+				} catch (error) {
+					console.error('ARセッションパラメータ設定エラー:', error);
+				}
+
+				console.log('ARモードを開始しました。ピンチジェスチャーで拡大縮小、ドラッグで移動できます。');
 			} else if (event.detail.status === 'session-ended') {
 				setIsARMode(false);
 			}
 		};
 
 		modelViewer.addEventListener('ar-status', handleARStatus);
+
+		// 他のイベントを追加
+		modelViewer.addEventListener('load', () => {
+			console.log('モデルが読み込まれました');
+
+			// モデルのスケールを初期設定
+			if (!modelViewer.hasAttribute('scale')) {
+				modelViewer.setAttribute('scale', '1 1 1');
+			}
+		});
+
+		// モデルが操作されたときのイベント
+		modelViewer.addEventListener('camera-change', () => {
+			if (isARMode) {
+				console.log('AR内でモデルが操作されました');
+			}
+		});
 
 		// デバイスに合わせたAR体験の最適化
 		try {
@@ -108,9 +146,10 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 		return () => {
 			// イベントリスナーのクリーンアップ
 			modelViewer.removeEventListener('ar-status', handleARStatus);
+			modelViewer.removeEventListener('load', () => { });
+			modelViewer.removeEventListener('camera-change', () => { });
 		};
-	}, [isModelViewerLoaded]);
-
+	}, [isModelViewerLoaded, isARMode]);
 	// 指示を非表示にする
 	const hideInstructions = () => {
 		setShowInstructions(false);
@@ -127,6 +166,29 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 
 	return (
 		<div className="ar-preview-container relative w-full h-[500px] bg-neutral-100 rounded-lg overflow-hidden">
+			<style jsx global>{`
+				model-viewer {
+					--poster-color: transparent;
+					touch-action: none;
+					-webkit-touch-callout: none;
+					-webkit-user-select: none;
+					user-select: none;
+				}
+				
+				model-viewer::part(default-ar-button) {
+					display: none;
+				}
+				
+				.ar-preview-container {
+					position: relative;
+					z-index: 10;
+				}
+				
+				/* ARモード中のスタイル */
+				body.ar-mode {
+					overflow: hidden;
+				}
+				`}</style>
 			{isModelViewerLoaded ? (
 				// @ts-ignore - modelviewerはカスタム要素なのでTypeScriptでは認識されない
 				<model-viewer
@@ -136,14 +198,21 @@ export const ARPreview: React.FC<ARPreviewProps> = ({ product, onClose }) => {
 					alt={`${product.title} のARプレビュー`}
 					ar
 					ar-modes="webxr scene-viewer quick-look"
-					ar-scale="fixed"
+					ar-scale="auto"            // 「fixed」から「auto」に変更
 					ar-placement={placementMode}
 					camera-controls
-					touch-action="pan-y"
+					touch-action="none"        // 「pan-y」から「none」に変更してすべてのジェスチャーを許可
 					seamless-poster
 					shadow-intensity="0"
 					environment-image="neutral"
 					exposure="0.8"
+					// 以下の属性を追加
+					interaction-prompt="none"
+					ar-status="not-presenting"
+					min-camera-orbit="auto auto auto"
+					max-camera-orbit="auto auto auto"
+					min-field-of-view="10deg"
+					max-field-of-view="90deg"
 					style={{ width: '100%', height: '100%' }}
 					className="w-full h-full"
 				>
