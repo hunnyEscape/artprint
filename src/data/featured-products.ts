@@ -25,6 +25,12 @@ export interface Product {
 		percentage: number;
 		endDate?: Date;
 	};
+	arModel?: {
+		glbUrl: string;           // GLBファイルへのパス
+		usdzUrl?: string;         // オプション: iOS向けUSDZファイルへのパス
+		scale?: number;           // モデルの表示スケール (デフォルト: 1.0)
+		placement?: 'wall' | 'floor' | 'auto'; // ARでの配置タイプ（デフォルト: 'wall'）
+	};
 
 	// 画像関連
 	images: ProductImage[];
@@ -69,6 +75,12 @@ export const featuredProducts: Product[] = [
 		discount: {
 			percentage: 15,
 			endDate: new Date(2025, 5, 30)
+		},
+		arModel: {
+			glbUrl: "/models/urban-horizon.glb",
+			//usdzUrl: "/models/urban-horizon.usdz", // iOSデバイス用
+			scale: 1.0,
+			placement: 'wall'
 		},
 		images: [
 			{
@@ -129,6 +141,12 @@ export const featuredProducts: Product[] = [
 		subtitle: "ナチュラルインテリア",
 		description: "自然をモチーフにした落ち着いたデザイン。家の中に癒しの空間を作り出すアートペーパーです。リラックス効果のある色合いで寝室やリビングに最適です。",
 		price: 5800,
+		arModel: {
+			glbUrl: "/models/urban-horizon.glb",
+			//usdzUrl: "/models/urban-horizon.usdz", // iOSデバイス用
+			scale: 1.0,
+			placement: 'wall'
+		},
 		images: [
 			{
 				id: "art002-main",
@@ -187,6 +205,12 @@ export const featuredProducts: Product[] = [
 		subtitle: "ミニマルデザイン",
 		description: "幾何学模様が織りなす現代的なデザイン。シンプルでありながら存在感のあるアートペーパーです。どんなインテリアにもマッチする汎用性の高さが特徴です。",
 		price: 5800,
+		arModel: {
+			glbUrl: "/models/urban-horizon.glb",
+			//usdzUrl: "/models/urban-horizon.usdz", // iOSデバイス用
+			scale: 1.0,
+			placement: 'wall'
+		},
 		images: [
 			{
 				id: "art003-main",
@@ -246,6 +270,12 @@ export const featuredProducts: Product[] = [
 		subtitle: "壮大な宇宙デザイン",
 		description: "宇宙をテーマにした壮大なデザイン。夜空の星や銀河をモチーフにした神秘的な雰囲気が特徴です。リビングや寝室に非日常的な空間を作り出します。",
 		price: 5800,
+		arModel: {
+			glbUrl: "/models/urban-horizon.glb",
+			//usdzUrl: "/models/urban-horizon.usdz", // iOSデバイス用
+			scale: 1.0,
+			placement: 'wall'
+		},
 		discount: {
 			percentage: 10,
 			endDate: new Date(2025, 4, 15)

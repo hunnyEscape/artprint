@@ -76,31 +76,25 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art001-main",
-				url: "/images/products/urban-horizon-main.jpg",
+				url: "/images/products/urban-horizon-main.png",
 				alt: "Urban Horizon メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art001-thumb1",
-				url: "/images/products/urban-horizon-thumb1.jpg",
+				url: "/images/products/urban-horizon-thumb1.png",
 				alt: "リビングルームでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
-				id: "art001-thumb2",
-				url: "/images/products/urban-horizon-thumb2.jpg",
-				alt: "オフィスでの設置例",
-				type: "lifestyle",
-				order: 3
-			},
-			{
 				id: "art001-detail",
-				url: "/images/products/urban-horizon-detail.jpg",
+				//url: "/images/products/urban-horizon-detail.jpg",
+				url: "/images/products/urban-horizon-thumb1.png",
 				alt: "質感の詳細",
 				type: "detail",
-				order: 4
+				order: 3
 			}
 		],
 		features: [
@@ -141,21 +135,21 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art002-main",
-				url: "/images/products/nature-harmony-main.jpg",
+				url: "/images/products/nature-harmony-main.png",
 				alt: "Nature Harmony メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art002-thumb1",
-				url: "/images/products/nature-harmony-thumb1.jpg",
+				url: "/images/products/nature-harmony-thumb1.png",
 				alt: "ベッドルームでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art002-thumb2",
-				url: "/images/products/nature-harmony-thumb2.jpg",
+				url: "/images/products/nature-harmony-thumb2.png",
 				alt: "リビングでの設置例",
 				type: "lifestyle",
 				order: 3
@@ -199,21 +193,22 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art003-main",
-				url: "/images/products/geometric-dreams-main.jpg",
+				url: "/images/products/geometric-dreams-main.png",
 				alt: "Geometric Dreams メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art003-thumb1",
-				url: "/images/products/geometric-dreams-thumb1.jpg",
+				url: "/images/products/geometric-dreams-thumb1.png",
 				alt: "ダイニングでの設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art003-thumb2",
-				url: "/images/products/geometric-dreams-thumb2.jpg",
+				url: "/images/products/geometric-dreams-thumb1.png",
+				//url: "/images/products/geometric-dreams-thumb2.jpg",
 				alt: "ワークスペースでの設置例",
 				type: "lifestyle",
 				order: 3
@@ -261,21 +256,21 @@ export const featuredProducts: Product[] = [
 		images: [
 			{
 				id: "art004-main",
-				url: "/images/products/cosmic-journey-main.jpg",
+				url: "/images/products/cosmic-journey-main.png",
 				alt: "Cosmic Journey メイン画像",
 				type: "main",
 				order: 1
 			},
 			{
 				id: "art004-thumb1",
-				url: "/images/products/cosmic-journey-thumb1.jpg",
+				url: "/images/products/cosmic-journey-thumb1.png",
 				alt: "寝室での設置例",
 				type: "lifestyle",
 				order: 2
 			},
 			{
 				id: "art004-thumb2",
-				url: "/images/products/cosmic-journey-thumb2.jpg",
+				url: "/images/products/cosmic-journey-thumb2.png",
 				alt: "リビングでの設置例",
 				type: "lifestyle",
 				order: 3
@@ -332,6 +327,321 @@ export function getThumbnailImages(product: Product): ProductImage[] {
 		.filter(img => img.type === 'thumbnail' || img.type === 'lifestyle' || img.type === 'detail')
 		.sort((a, b) => a.order - b.order);
 }-e 
+### FILE: ./src/contexts/ShowcaseContext.tsx
+
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { Product } from '@/data/featured-products';
+
+// コンテキストの型定義を拡張
+interface ShowcaseContextType {
+  activeSection: string | null;
+  activeSectionIndex: number;
+  activeProduct: Product | null;
+  nextProduct: Product | null;
+  previousProduct: Product | null;
+  setActiveSection: (sectionId: string) => void;
+  setActiveSectionIndex: (index: number) => void;
+  setActiveProduct: (product: Product) => void;
+  setNextProduct: (product: Product | null) => void;
+  setPreviousProduct: (product: Product | null) => void;
+  registerSection: (sectionId: string, products: Product[]) => void;
+  unregisterSection: (sectionId: string) => void;
+  sections: Record<string, { products: Product[] }>;
+  allProducts: Product[];
+  // 新しく追加した機能
+  scrollDirection: 'up' | 'down';
+  isTransitioning: boolean;
+  setIsTransitioning: (isTransitioning: boolean) => void;
+}
+
+// デフォルト値を拡張
+const defaultContext: ShowcaseContextType = {
+  activeSection: null,
+  activeSectionIndex: 0,
+  activeProduct: null,
+  nextProduct: null,
+  previousProduct: null,
+  setActiveSection: () => {},
+  setActiveSectionIndex: () => {},
+  setActiveProduct: () => {},
+  setNextProduct: () => {},
+  setPreviousProduct: () => {},
+  registerSection: () => {},
+  unregisterSection: () => {},
+  sections: {},
+  allProducts: [],
+  // 新しいデフォルト値
+  scrollDirection: 'down',
+  isTransitioning: false,
+  setIsTransitioning: () => {}
+};
+
+// コンテキスト作成
+const ShowcaseContext = createContext<ShowcaseContextType>(defaultContext);
+
+// コンテキストプロバイダー
+export const ShowcaseProvider = ({ children, initialProducts = [] }: { children: ReactNode, initialProducts?: Product[] }) => {
+  const [state, setState] = useState({
+    activeSection: null as string | null,
+    activeSectionIndex: 0,
+    activeProduct: null as Product | null,
+    nextProduct: null as Product | null,
+    previousProduct: null as Product | null,
+    sections: {} as Record<string, { products: Product[] }>,
+    allProducts: initialProducts,
+    // 新しい状態
+    scrollDirection: 'down' as 'up' | 'down',
+    isTransitioning: false
+  });
+  
+  const { 
+    activeSection, 
+    activeSectionIndex, 
+    activeProduct, 
+    nextProduct, 
+    previousProduct, 
+    sections, 
+    allProducts, 
+    scrollDirection, 
+    isTransitioning 
+  } = state;
+
+  // スクロール方向の検出
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const direction = currentScrollY > lastScrollY ? 'down' : 'up';
+      
+      if (scrollDirection !== direction) {
+        setState(prev => ({
+          ...prev,
+          scrollDirection: direction
+        }));
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [scrollDirection]);
+
+  // アクティブセクションを設定
+  const setActiveSection = useCallback((sectionId: string) => {
+    setState(prev => ({
+      ...prev,
+      activeSection: sectionId
+    }));
+  }, []);
+
+  // アクティブセクションインデックスを設定
+  const setActiveSectionIndex = useCallback((index: number) => {
+    setState(prev => ({
+      ...prev,
+      activeSectionIndex: index
+    }));
+  }, []);
+
+  // トランジション状態設定関数
+  const setIsTransitioning = useCallback((value: boolean) => {
+    setState(prev => ({
+      ...prev,
+      isTransitioning: value
+    }));
+  }, []);
+
+  // アクティブ製品を設定（同じ製品の場合は更新しない）
+  const setActiveProduct = useCallback((product: Product | null) => {
+    // 同じ製品が選択された場合は更新しない（IDで比較）
+    if (activeProduct && product && activeProduct.id === product.id) {
+      return;
+    }
+    
+    // トランジション開始
+    setState(prev => ({
+      ...prev,
+      isTransitioning: true
+    }));
+    
+    setState(prev => {
+      // 更新されるアクティブな製品情報
+      const updatedState: Partial<typeof prev> = {
+        activeProduct: product
+      };
+      
+      // 製品が指定された場合、前後の製品も設定
+      if (product && allProducts.length > 0) {
+        const currentIndex = allProducts.findIndex(p => p.id === product.id);
+        
+        // 次の製品を設定（存在する場合）
+        if (currentIndex >= 0 && currentIndex < allProducts.length - 1) {
+          updatedState.nextProduct = allProducts[currentIndex + 1];
+        } else {
+          updatedState.nextProduct = null;
+        }
+        
+        // 前の製品を設定（存在する場合）
+        if (currentIndex > 0) {
+          updatedState.previousProduct = allProducts[currentIndex - 1];
+        } else {
+          updatedState.previousProduct = null;
+        }
+      } else {
+        // 製品が指定されなかった場合はnullに設定
+        updatedState.nextProduct = null;
+        updatedState.previousProduct = null;
+      }
+      
+      return {
+        ...prev,
+        ...updatedState
+      };
+    });
+    
+    // トランジション完了後にフラグをリセット
+    setTimeout(() => {
+      setState(prev => ({
+        ...prev,
+        isTransitioning: false
+      }));
+    }, 800); // トランジション時間に合わせる
+  }, [activeProduct, allProducts]);
+
+  // 次の製品を明示的に設定する関数
+  const setNextProduct = useCallback((product: Product | null) => {
+    setState(prev => ({
+      ...prev,
+      nextProduct: product
+    }));
+  }, []);
+
+  // 前の製品を明示的に設定する関数
+  const setPreviousProduct = useCallback((product: Product | null) => {
+    setState(prev => ({
+      ...prev,
+      previousProduct: product
+    }));
+  }, []);
+
+  // セクションの登録
+  const registerSection = useCallback((sectionId: string, products: Product[]) => {
+    setState(prev => {
+      const newSections = {
+        ...prev.sections,
+        [sectionId]: { products }
+      };
+      
+      // すべての製品リストを更新
+      const allProductsList = Object.values(newSections).flatMap(section => section.products);
+      
+      // 最初のセクションが登録されたらアクティブにする
+      if (!prev.activeSection) {
+        const firstProduct = products[0] || null;
+        const nextProduct = products.length > 1 ? products[1] : null;
+        const previousProduct = null; // 最初のセクションなので前の製品はない
+        
+        return {
+          ...prev,
+          activeSection: sectionId,
+          activeProduct: firstProduct,
+          nextProduct,
+          previousProduct,
+          sections: newSections,
+          allProducts: allProductsList
+        };
+      }
+      
+      return {
+        ...prev,
+        sections: newSections,
+        allProducts: allProductsList
+      };
+    });
+  }, []);
+
+  // セクションの登録解除
+  const unregisterSection = useCallback((sectionId: string) => {
+    setState(prev => {
+      const newSections = { ...prev.sections };
+      delete newSections[sectionId];
+      
+      // すべての製品リストを更新
+      const allProductsList = Object.values(newSections).flatMap(section => section.products);
+      
+      // アクティブセクションが削除された場合、別のセクションをアクティブにする
+      if (prev.activeSection === sectionId) {
+        const remainingSections = Object.keys(newSections);
+        
+        if (remainingSections.length > 0) {
+          const firstSection = remainingSections[0];
+          const firstSectionProducts = newSections[firstSection]?.products || [];
+          const firstProduct = firstSectionProducts[0] || null;
+          const nextProduct = firstSectionProducts.length > 1 ? firstSectionProducts[1] : null;
+          
+          return {
+            ...prev,
+            activeSection: firstSection,
+            activeProduct: firstProduct,
+            nextProduct,
+            previousProduct: null, // 最初のセクションを選択するので前の製品はない
+            sections: newSections,
+            allProducts: allProductsList
+          };
+        } else {
+          return {
+            ...prev,
+            activeSection: null,
+            activeProduct: null,
+            nextProduct: null,
+            previousProduct: null,
+            sections: newSections,
+            allProducts: allProductsList
+          };
+        }
+      }
+      
+      return {
+        ...prev,
+        sections: newSections,
+        allProducts: allProductsList
+      };
+    });
+  }, []);
+
+  return (
+    <ShowcaseContext.Provider
+      value={{
+        activeSection,
+        activeSectionIndex,
+        activeProduct,
+        nextProduct,
+        previousProduct,
+        setActiveSection,
+        setActiveSectionIndex,
+        setActiveProduct,
+        setNextProduct,
+        setPreviousProduct,
+        registerSection,
+        unregisterSection,
+        sections,
+        allProducts,
+        // 新しく追加した値
+        scrollDirection,
+        isTransitioning,
+        setIsTransitioning
+      }}
+    >
+      {children}
+    </ShowcaseContext.Provider>
+  );
+};
+
+// カスタムフック
+export const useShowcase = () => useContext(ShowcaseContext);-e 
 ### FILE: ./src/lib/analytics.ts
 
 // Google Analytics 4の測定ID
@@ -485,6 +795,39 @@ export const trackTimeOnPage = () => {
 		});
 	}
 };-e 
+### FILE: ./src/app/gallery/page.tsx
+
+'use client';
+
+import React from 'react';
+import { featuredProducts } from '@/data/featured-products';
+import { ProductShowcaseSection } from '@/components/showcase/ProductShowcaseSection';
+import { ShowcaseProvider } from '@/contexts/ShowcaseContext';
+import { ShowcaseBackgroundManager } from '@/components/showcase/ShowcaseBackgroundManager';
+
+export default function ShowcaseGalleryPage() {
+	return (
+		<ShowcaseProvider initialProducts={featuredProducts}>
+			{/* グローバル背景マネージャー */}
+			<ShowcaseBackgroundManager />
+
+			<div className="showcase-gallery">
+				{/* 各壁紙製品に対してセクションを順番に表示 */}
+				{featuredProducts.map((product, index) => (
+					<ProductShowcaseSection
+						key={product.id}
+						product={product}
+						index={index}
+						totalProducts={featuredProducts.length}
+					/>
+				))}
+
+				{/* 余白を追加して最後のセクションが完全に表示されるようにする */}
+				<div className="h-[50vh]"></div>
+			</div>
+		</ShowcaseProvider>
+	);
+}-e 
 ### FILE: ./src/app/lp/page.tsx
 
 import { HeroSection } from "@/components/sections/hero-section";
@@ -502,7 +845,6 @@ import { GalleryPreviewSection } from "@/components/sections/gallery-preview-sec
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { FAQSection } from "@/components/sections/faq-section";
 import { CTASection } from "@/components/sections/cta-section";
-import { ShowcaseSection } from "@/components/sections/ShowcaseSection";
 import { PageAnalytics } from "@/components/analytics/page-analytics";
 import { Metadata } from "next";
 
@@ -583,9 +925,6 @@ export default function LandingPage() {
 			<div id="cta-section" data-section-name="CTA">
 				<CTASection />
 			</div>
-			<div id="showcase-section" data-section-name="商品ショーケース">
-				<ShowcaseSection />
-			</div>
 		</>
 	);
 }-e 
@@ -598,6 +937,8 @@ import { Metadata } from 'next';
 import { cn } from '@/utils/cn';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
+import { ShowcaseProvider } from '@/contexts/ShowcaseContext';
+import { ShowcaseBackgroundManager } from '@/components/showcase/ShowcaseBackgroundManager';
 
 // フォントの定義
 const inter = Inter({
@@ -642,12 +983,17 @@ export default function RootLayout({
 			mPlus1p.variable
 		)}>
 			<body className="min-h-screen bg-neutral-50 font-sans text-neutral-900 antialiased">
-				<Navbar />
-				<main className="pt-16 md:pt-20">
-					{children}
-				</main>
-				<Footer />
-				<Analytics />
+				<ShowcaseProvider>
+					{/* 固定背景マネージャー */}
+					<ShowcaseBackgroundManager />
+
+					<Navbar />
+					<main className="pt-16 md:pt-20">
+						{children}
+					</main>
+					<Footer />
+					<Analytics />
+				</ShowcaseProvider>
 			</body>
 		</html>
 	);
@@ -676,6 +1022,35 @@ export default function Home() {
 			</div>
 		</Container>
 	);
+}-e 
+### FILE: ./src/hooks/useImagePreload.ts
+
+// src/hooks/useImagePreload.ts
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export function useImagePreload(src: string): boolean {
+	const [isLoaded, setIsLoaded] = useState(false);
+
+	useEffect(() => {
+		if (!src) {
+			setIsLoaded(false);
+			return;
+		}
+
+		const img = new Image();
+		img.src = src;
+		img.onload = () => setIsLoaded(true);
+		img.onerror = () => setIsLoaded(false);
+
+		return () => {
+			img.onload = null;
+			img.onerror = null;
+		};
+	}, [src]);
+
+	return isLoaded;
 }-e 
 ### FILE: ./src/utils/cn.ts
 
@@ -764,7 +1139,7 @@ import { Container } from "./container";
 
 export function Navbar() {
 	return (
-		<header className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-sm border-b border-neutral-100 z-50">
+		<header className="top-0 left-0 w-full bg-white/90 backdrop-blur-sm border-b border-neutral-100 z-50">
 			<Container>
 				<div className="flex items-center justify-between h-16 md:h-20">
 					<Link href="/" className="font-accent text-2xl font-bold">
@@ -3784,6 +4159,607 @@ export function PageAnalytics({ sectionIds = [] }: PageAnalyticsProps) {
 	// 表示のみのコンポーネントなのでUIは不要
 	return null;
 }-e 
+### FILE: ./src/components/showcase/ProductShowcaseSection.tsx
+
+'use client';
+
+import React, { useRef, useEffect, useState, useMemo } from 'react';
+import Image from 'next/image';
+import { Product } from '@/data/featured-products';
+import { ProductDetails } from './ProductDetails';
+import { InteriorPreview } from './InteriorPreview';
+import { Container } from '@/components/layout/container';
+import { useImagePreload } from '@/hooks/useImagePreload';
+import { useShowcase } from '@/contexts/ShowcaseContext';
+
+interface ProductShowcaseSectionProps {
+	product: Product;
+	index: number;
+	totalProducts: number;
+}
+
+export const ProductShowcaseSection: React.FC<ProductShowcaseSectionProps> = ({
+	product,
+	index,
+	totalProducts
+}) => {
+	const { setActiveProduct, isTransitioning, activeProduct } = useShowcase();
+	const sectionRef = useRef<HTMLDivElement>(null);
+	const titleSectionRef = useRef<HTMLDivElement>(null);
+	const titleTriggerRef = useRef<HTMLDivElement>(null); // タイトルセクションに関連付けられたトリガー
+	const detailsSectionRef = useRef<HTMLDivElement>(null);
+
+	const [isActive, setIsActive] = useState(false);
+	const [lastTriggerTime, setLastTriggerTime] = useState(0);
+
+	// 各製品セクションの一意のID
+	const sectionId = useMemo(() => `product-${product.id}`, [product.id]);
+
+	// メイン画像URLと読み込み状態
+	const mainImageUrl = useMemo(() => {
+		const mainImage = product.images.find(img => img.type === 'main');
+		return mainImage?.url || '';
+	}, [product.images]);
+
+	const isImageLoaded = useImagePreload(mainImageUrl);
+
+	// トリガーハンドラー - 即時応答するよう最適化
+	const handleProductTrigger = () => {
+		const now = Date.now();
+		if (
+			isTransitioning ||
+			now - lastTriggerTime < 500 || // デバウンス時間
+			(activeProduct && activeProduct.id === product.id)
+		) {
+			return;
+		}
+
+		// console.log(`${product.title} のトリガー検出: 背景更新`);
+		setLastTriggerTime(now);
+		setIsActive(true);
+
+		// 即時に製品をアクティブに設定
+		setActiveProduct(product);
+	};
+
+	// タイトルトリガーの監視
+	useEffect(() => {
+		if (!titleTriggerRef.current) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						// console.log(`${product.title} - タイトルトリガー検出: 背景更新`);
+						handleProductTrigger();
+					}
+				});
+			},
+			{
+				// トリガーを少し大きめに設定して、タイトルセクションの前で検出
+				threshold: 0 // 1ピクセルでも表示されたら反応
+			}
+		);
+
+		observer.observe(titleTriggerRef.current);
+
+		return () => observer.disconnect();
+	}, [product, handleProductTrigger]);
+
+	// 非アクティブ化の処理
+	useEffect(() => {
+		if (activeProduct && activeProduct.id !== product.id && isActive) {
+			setIsActive(false);
+		}
+	}, [activeProduct, product.id, isActive]);
+
+	return (
+		<section
+			id={sectionId}
+			ref={sectionRef}
+			className="product-showcase relative"
+			data-index={index}
+			data-product-id={product.id}
+			data-is-active={isActive}
+		>
+			{/* タイトルセクション */}
+			<div
+				ref={titleSectionRef}
+				className="relative h-[120vh] flex items-center justify-center"
+			>
+				{/* タイトルセクション上にオーバーレイするトリガーゾーン */}
+				<div
+					ref={titleTriggerRef}
+					className="absolute inset-0 -top-[500px] -bottom-[500px]" // 上下に300pxはみ出す
+					aria-hidden="true"
+					data-trigger="title"
+					style={{
+						pointerEvents: 'none',
+						opacity: 0
+					}}
+				/>
+
+				<div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+					<Container>
+						<h2 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg mb-4">
+							{product.title}
+						</h2>
+						{product.subtitle && (
+							<p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
+								{product.subtitle}
+							</p>
+						)}
+					</Container>
+				</div>
+			</div>
+
+			{/* 製品紹介セクション */}
+			<div
+				className="relative w-full min-h-screen bg-white text-neutral-900"
+				ref={detailsSectionRef}
+			>
+				<Container>
+					<div className="py-20">
+						{/* インテリアプレビュー */}
+						<InteriorPreview product={product} />
+
+						{/* 製品詳細 */}
+						<div className="mt-16">
+							<ProductDetails product={product} />
+						</div>
+
+						{/* 追加情報（オプション） */}
+						<div className="mt-20 p-8 bg-white rounded-xl shadow-md">
+							<h3 className="text-2xl font-bold mb-4 text-neutral-900">この壁紙について</h3>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+								<div>
+									<h4 className="text-lg font-medium mb-2 text-neutral-900">こんな場所におすすめ</h4>
+									<ul className="space-y-2">
+										{product.tags.map((tag, idx) => (
+											<li key={idx} className="flex items-center gap-2 text-neutral-700">
+												<span className="w-2 h-2 rounded-full" style={{ backgroundColor: product.accentColor || '#3B82F6' }}></span>
+												<span>{tag}テイストの部屋</span>
+											</li>
+										))}
+									</ul>
+								</div>
+								<div>
+									<h4 className="text-lg font-medium mb-2 text-neutral-900">仕様</h4>
+									<ul className="space-y-2">
+										{Object.entries(product.specifications).map(([key, value], idx) => (
+											<li key={idx} className="flex justify-between border-b pb-1">
+												<span className="text-neutral-500">{key}</span>
+												<span className="font-medium text-neutral-900">{value}</span>
+											</li>
+										))}
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</Container>
+			</div>
+		</section>
+	);
+};-e 
+### FILE: ./src/components/showcase/InteriorPreview.tsx
+
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { Product } from '@/data/featured-products';
+
+interface InteriorPreviewProps {
+	product: Product;
+}
+
+export const InteriorPreview: React.FC<InteriorPreviewProps> = ({ product }) => {
+	const [selectedRoom, setSelectedRoom] = useState<'living' | 'bedroom' | 'office'>('living');
+
+	// 部屋の種類ごとのインテリア画像パス
+	const roomImages = {
+		living: "/images/interiors/living-room.jpg",
+		bedroom: "/images/interiors/bedroom.jpg",
+		office: "/images/interiors/office.jpg"
+	};
+
+	// 実際の実装ではこれらの画像が存在する必要があります
+	// プレースホルダーの場合は下記のようにフォールバック
+	const fallbackImage = "/images/placeholder.jpg";
+
+	// 壁紙のオーバーレイサイズと位置（部屋ごとに異なる設定）
+	const wallpaperPositions = {
+		living: {
+			width: '60%',
+			height: '70%',
+			top: '15%',
+			left: '20%',
+			transform: 'perspective(1000px) rotateY(-10deg)'
+		},
+		bedroom: {
+			width: '50%',
+			height: '60%',
+			top: '20%',
+			left: '25%',
+			transform: 'perspective(1000px) rotateY(-5deg)'
+		},
+		office: {
+			width: '45%',
+			height: '65%',
+			top: '18%',
+			left: '28%',
+			transform: 'perspective(1000px) rotateY(-8deg)'
+		}
+	};
+
+	// 選択中の部屋の壁紙配置情報
+	const currentPosition = wallpaperPositions[selectedRoom];
+
+	// 商品のメイン画像取得
+	const getMainImage = () => {
+		const mainImage = product.images.find(img => img.type === 'main');
+		return mainImage?.url || fallbackImage;
+	};
+
+	return (
+		<div className="mt-12 mb-20">
+			<div className="flex justify-center mb-6 space-x-4">
+				<button
+					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'living'
+							? 'bg-primary-500 text-white'
+							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
+						}`}
+					onClick={() => setSelectedRoom('living')}
+				>
+					リビングルーム
+				</button>
+				<button
+					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'bedroom'
+							? 'bg-primary-500 text-white'
+							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
+						}`}
+					onClick={() => setSelectedRoom('bedroom')}
+				>
+					ベッドルーム
+				</button>
+				<button
+					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'office'
+							? 'bg-primary-500 text-white'
+							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
+						}`}
+					onClick={() => setSelectedRoom('office')}
+				>
+					オフィス/書斎
+				</button>
+			</div>
+
+			<div className="relative aspect-[16/9] max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl">
+				{/* 部屋の背景画像 */}
+				<div className="absolute inset-0 bg-neutral-200 flex items-center justify-center">
+					<Image
+						src={roomImages[selectedRoom] || fallbackImage}
+						alt={`${selectedRoom} with ${product.title}`}
+						fill
+						sizes="(max-width: 768px) 100vw, 800px"
+						className="object-cover"
+					/>
+				</div>
+
+				{/* 壁紙オーバーレイ (3D変形効果付き) */}
+				<div
+					className="absolute shadow-lg"
+					style={{
+						width: currentPosition.width,
+						height: currentPosition.height,
+						top: currentPosition.top,
+						left: currentPosition.left,
+						transform: currentPosition.transform
+					}}
+				>
+					<Image
+						src={getMainImage()}
+						alt={product.title}
+						fill
+						sizes="400px"
+						className="object-cover rounded-sm"
+					/>
+				</div>
+
+				{/* 全体の暗め調整レイヤー */}
+				<div className="absolute inset-0 bg-black/15" />
+
+				{/* 説明テキスト */}
+				<div className="absolute bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm max-w-xs">
+					<p>実際の壁に貼った際のイメージです。部屋のサイズや光の状態により見え方が異なる場合があります。</p>
+				</div>
+			</div>
+		</div>
+	);
+};-e 
+### FILE: ./src/components/showcase/ProductDetails.tsx
+
+'use client';
+
+import React from 'react';
+import { Product } from '@/data/featured-products';
+import { ECLinkButton } from "@/components/ui/ec-link-button";
+import Image from 'next/image';
+
+interface ProductDetailsProps {
+	product: Product;
+}
+
+export const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
+	// 一貫した白背景スタイルを使用
+	const styles = {
+		wrapper: 'bg-white/90 backdrop-blur-lg',
+		title: 'text-neutral-900',
+		description: 'text-neutral-700',
+		price: 'text-neutral-900',
+		button: 'bg-primary-500 hover:bg-primary-600 text-white',
+		features: 'bg-neutral-50 border-neutral-200',
+		accent: product.accentColor || '#3B82F6'
+	};
+
+	return (
+		<div className={`rounded-xl ${styles.wrapper} p-8 shadow-xl max-w-2xl mx-auto transition-all duration-500`}>
+			{/* カテゴリとタグ */}
+			<div className="flex flex-wrap items-center gap-2 mb-4">
+				<span
+					className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white"
+					style={{ backgroundColor: styles.accent }}
+				>
+					{product.category}
+				</span>
+				{product.tags.slice(0, 3).map(tag => (
+					<span key={tag} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700">
+						{tag}
+					</span>
+				))}
+			</div>
+
+			{/* 商品タイトルと説明 */}
+			<h3 className={`text-2xl md:text-3xl font-bold mb-2 ${styles.title}`}>
+				{product.title}
+			</h3>
+			{product.subtitle && (
+				<p className={`text-lg ${styles.description} mb-4`}>
+					{product.subtitle}
+				</p>
+			)}
+
+			{/* 評価とレビュー */}
+			{product.rating && (
+				<div className="flex items-center gap-2 mb-4">
+					<div className="flex">
+						{[...Array(5)].map((_, i) => (
+							<svg
+								key={i}
+								className={`w-5 h-5 ${i < Math.floor(product.rating!.average)
+									? 'text-yellow-400'
+									: 'text-neutral-300'
+									}`}
+								fill="currentColor"
+								viewBox="0 0 20 20"
+							>
+								<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+							</svg>
+						))}
+					</div>
+					<span className={`text-sm ${styles.description}`}>
+						{product.rating.average} ({product.rating.count}件のレビュー)
+					</span>
+				</div>
+			)}
+
+			{/* 価格情報 */}
+			<div className="mb-6">
+				{product.discount ? (
+					<div className="flex items-center gap-3">
+						<span className={`text-3xl font-bold ${styles.price}`}>
+							¥{Math.round(product.price * (1 - product.discount.percentage / 100)).toLocaleString()}
+						</span>
+						<span className="text-lg line-through text-neutral-500">
+							¥{product.price.toLocaleString()}
+						</span>
+						<span className="bg-red-500 text-white px-2 py-0.5 rounded text-sm font-medium">
+							{product.discount.percentage}%OFF
+						</span>
+					</div>
+				) : (
+					<span className={`text-3xl font-bold ${styles.price}`}>
+						¥{product.price.toLocaleString()}
+					</span>
+				)}
+				<p className="text-sm mt-1 text-neutral-500">
+					送料無料・税込
+				</p>
+			</div>
+
+			{/* 商品説明 */}
+			<p className={`${styles.description} mb-6`}>
+				{product.description}
+			</p>
+
+			{/* サイズ */}
+			<div className="mb-6">
+				<h4 className={`font-medium mb-2 ${styles.title}`}>サイズ</h4>
+				<div className="flex items-center gap-4">
+					<div className="border border-neutral-200 rounded-lg p-3 text-center min-w-[80px]">
+						<div className={`text-sm ${styles.description}`}>幅</div>
+						<div className={`font-medium ${styles.title}`}>
+							{product.dimensions.width}
+							<span className="text-sm">{product.dimensions.unit}</span>
+						</div>
+					</div>
+					<div className="border border-neutral-200 rounded-lg p-3 text-center min-w-[80px]">
+						<div className={`text-sm ${styles.description}`}>高さ</div>
+						<div className={`font-medium ${styles.title}`}>
+							{product.dimensions.height}
+							<span className="text-sm">{product.dimensions.unit}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* CTAボタン */}
+			<div className="flex flex-col sm:flex-row gap-4 mt-8">
+				<ECLinkButton
+					href={`https://ec.artpaper.com/products/${product.id}`}
+					location="showcase"
+					variant="primary"
+					className={`py-3 px-8 text-lg font-medium rounded-md ${styles.button}`}
+				>
+					購入する
+				</ECLinkButton>
+
+				<button
+					className="py-3 px-8 text-lg font-medium rounded-md border border-neutral-300 text-neutral-700 hover:bg-neutral-100 transition-colors"
+					onClick={() => alert('お気に入りに追加しました！')}
+				>
+					<span className="flex items-center justify-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+							<path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+						</svg>
+						お気に入り
+					</span>
+				</button>
+			</div>
+		</div>
+	);
+};-e 
+### FILE: ./src/components/showcase/ShowcaseBackgroundManager.tsx
+
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useShowcase } from '@/contexts/ShowcaseContext';
+import { Product } from '@/data/featured-products';
+import Image from 'next/image';
+
+export const ShowcaseBackgroundManager: React.FC = () => {
+	const { activeProduct } = useShowcase();
+	const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+	const [previousProduct, setPreviousProduct] = useState<Product | null>(null);
+	const [imageLoaded, setImageLoaded] = useState(false);
+	const [isTransitioning, setIsTransitioning] = useState(false);
+
+	// 背景トランジションを管理
+	useEffect(() => {
+		if (activeProduct && (!currentProduct || currentProduct.id !== activeProduct.id)) {
+			console.log("背景トランジション開始:", activeProduct.title);
+			
+			// 現在の製品を前の製品として保存
+			if (currentProduct) {
+				setPreviousProduct(currentProduct);
+			}
+			
+			// トランジション状態を設定
+			setIsTransitioning(true);
+			
+			// 新しい製品を設定
+			setCurrentProduct(activeProduct);
+			
+			// トランジション完了後に前の背景をクリア
+			const timer = setTimeout(() => {
+				setIsTransitioning(false);
+				setPreviousProduct(null);
+			}, 800); // トランジション時間に合わせる
+			
+			return () => clearTimeout(timer);
+		}
+	}, [activeProduct, currentProduct]);
+
+	// メイン画像URLを取得する関数
+	const getMainImage = (product: Product) => {
+		const mainImage = product.images.find(img => img.type === 'main');
+		return mainImage?.url || '';
+	};
+
+	// 背景がない場合のフォールバック
+	if (!currentProduct) {
+		return (
+			<div
+				className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-gray-800 to-gray-900"
+				style={{ zIndex: -1 }}
+			/>
+		);
+	}
+
+	const currentImageUrl = getMainImage(currentProduct);
+	const previousImageUrl = previousProduct ? getMainImage(previousProduct) : '';
+
+	return (
+		<div
+			className="fixed top-0 left-0 w-full h-screen overflow-hidden"
+			style={{ zIndex: -1 }}
+		>
+			{/* 現在の背景画像 */}
+			{currentImageUrl && (
+				<div 
+					className={`absolute inset-0 transition-opacity duration-800 ease-in-out ${
+						isTransitioning ? 'opacity-100' : 'opacity-100'
+					}`}
+				>
+					<Image
+						src={currentImageUrl}
+						alt={currentProduct.title}
+						fill
+						priority
+						sizes="100vw"
+						className="object-cover"
+						onLoad={() => setImageLoaded(true)}
+						onError={(e) => {
+							console.error("画像読み込みエラー:", currentImageUrl);
+							e.currentTarget.style.display = 'none';
+						}}
+					/>
+					
+					{/* 均一な薄い透明のオーバーレイ */}
+					<div className="absolute inset-0 bg-black/40" />
+				</div>
+			)}
+			
+			{/* 前の背景画像 (トランジション中のみ表示) */}
+			{previousImageUrl && isTransitioning && (
+				<div 
+					className="absolute inset-0 transition-opacity duration-800 ease-in-out opacity-0"
+				>
+					<Image
+						src={previousImageUrl}
+						alt={previousProduct?.title || ""}
+						fill
+						sizes="100vw"
+						className="object-cover"
+					/>
+					
+					{/* 均一な薄い透明のオーバーレイ */}
+					<div className="absolute inset-0 bg-black/40" />
+				</div>
+			)}
+			
+			{/* 画像読み込み中のプレースホルダー (初回読み込み時のみ) */}
+			{!imageLoaded && (
+				<div
+					className="absolute inset-0 flex items-center justify-center"
+					style={{
+						background: `linear-gradient(135deg, ${currentProduct.accentColor || '#3B82F6'}33, ${currentProduct.accentColor || '#3B82F6'}11)`,
+					}}
+				>
+					<div className="text-center">
+						<div className="animate-pulse mb-4">
+							<svg className="w-16 h-16 mx-auto text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+						</div>
+						<h2 className="text-2xl font-bold text-white/70">{currentProduct.title}</h2>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};-e 
 ### FILE: ./tailwind.config.js
 
 //tailwind.config.js
@@ -3946,7 +4922,6 @@ module.exports = {
   }-e 
 ### FILE: ./next.config.js
 
-//next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
@@ -3956,9 +4931,14 @@ const nextConfig = {
 	images: {
 		formats: ['image/avif', 'image/webp'],
 		domains: ['firebasestorage.googleapis.com'],
+		// プレースホルダーを追加
+		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		// 一時的に画像検証を無効化（開発中のみ）
+		unoptimized: process.env.NODE_ENV === 'development',
 	},
 	experimental: {
-		serverActions: true,  // boolean値として設定
+		serverActions: true,
 	},
 	eslint: {
 		ignoreDuringBuilds: true,

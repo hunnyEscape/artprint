@@ -3,131 +3,88 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Product } from '@/data/featured-products';
+import { ARPreview } from './ARPreview';
 
 interface InteriorPreviewProps {
-	product: Product;
+  product: Product;
 }
 
 export const InteriorPreview: React.FC<InteriorPreviewProps> = ({ product }) => {
-	const [selectedRoom, setSelectedRoom] = useState<'living' | 'bedroom' | 'office'>('living');
-
-	// 部屋の種類ごとのインテリア画像パス
-	const roomImages = {
-		living: "/images/interiors/living-room.jpg",
-		bedroom: "/images/interiors/bedroom.jpg",
-		office: "/images/interiors/office.jpg"
-	};
-
-	// 実際の実装ではこれらの画像が存在する必要があります
-	// プレースホルダーの場合は下記のようにフォールバック
-	const fallbackImage = "/images/placeholder.jpg";
-
-	// 壁紙のオーバーレイサイズと位置（部屋ごとに異なる設定）
-	const wallpaperPositions = {
-		living: {
-			width: '60%',
-			height: '70%',
-			top: '15%',
-			left: '20%',
-			transform: 'perspective(1000px) rotateY(-10deg)'
-		},
-		bedroom: {
-			width: '50%',
-			height: '60%',
-			top: '20%',
-			left: '25%',
-			transform: 'perspective(1000px) rotateY(-5deg)'
-		},
-		office: {
-			width: '45%',
-			height: '65%',
-			top: '18%',
-			left: '28%',
-			transform: 'perspective(1000px) rotateY(-8deg)'
-		}
-	};
-
-	// 選択中の部屋の壁紙配置情報
-	const currentPosition = wallpaperPositions[selectedRoom];
-
-	// 商品のメイン画像取得
-	const getMainImage = () => {
-		const mainImage = product.images.find(img => img.type === 'main');
-		return mainImage?.url || fallbackImage;
-	};
-
-	return (
-		<div className="mt-12 mb-20">
-			<div className="flex justify-center mb-6 space-x-4">
-				<button
-					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'living'
-							? 'bg-primary-500 text-white'
-							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
-						}`}
-					onClick={() => setSelectedRoom('living')}
-				>
-					リビングルーム
-				</button>
-				<button
-					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'bedroom'
-							? 'bg-primary-500 text-white'
-							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
-						}`}
-					onClick={() => setSelectedRoom('bedroom')}
-				>
-					ベッドルーム
-				</button>
-				<button
-					className={`px-4 py-2 rounded-full text-sm font-medium ${selectedRoom === 'office'
-							? 'bg-primary-500 text-white'
-							: 'bg-white/50 text-neutral-700 hover:bg-white/80'
-						}`}
-					onClick={() => setSelectedRoom('office')}
-				>
-					オフィス/書斎
-				</button>
-			</div>
-
-			<div className="relative aspect-[16/9] max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl">
-				{/* 部屋の背景画像 */}
-				<div className="absolute inset-0 bg-neutral-200 flex items-center justify-center">
-					<Image
-						src={roomImages[selectedRoom] || fallbackImage}
-						alt={`${selectedRoom} with ${product.title}`}
-						fill
-						sizes="(max-width: 768px) 100vw, 800px"
-						className="object-cover"
-					/>
-				</div>
-
-				{/* 壁紙オーバーレイ (3D変形効果付き) */}
-				<div
-					className="absolute shadow-lg"
-					style={{
-						width: currentPosition.width,
-						height: currentPosition.height,
-						top: currentPosition.top,
-						left: currentPosition.left,
-						transform: currentPosition.transform
-					}}
-				>
-					<Image
-						src={getMainImage()}
-						alt={product.title}
-						fill
-						sizes="400px"
-						className="object-cover rounded-sm"
-					/>
-				</div>
-
-				{/* 全体の暗め調整レイヤー */}
-				<div className="absolute inset-0 bg-black/15" />
-
-				{/* 説明テキスト */}
-				<div className="absolute bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm max-w-xs">
-					<p>実際の壁に貼った際のイメージです。部屋のサイズや光の状態により見え方が異なる場合があります。</p>
-				</div>
-			</div>
-		</div>
-	);
+  const [showARPreview, setShowARPreview] = useState(false);
+  
+  // メイン画像取得
+  const mainImage = product.images.find(img => img.type === 'main');
+  const mainImageUrl = mainImage?.url || '';
+  
+  // ARプレビューの表示切り替え
+  const toggleARPreview = () => {
+    setShowARPreview(!showARPreview);
+  };
+  
+  // ARが利用可能かどうかをチェック（URLの存在でチェック）
+  const isARAvailable = product.arModel?.glbUrl !== undefined;
+  
+  return (
+    <div className="interior-preview relative rounded-lg overflow-hidden bg-neutral-100">
+      {/* ARプレビュー表示時 */}
+      {showARPreview ? (
+        <div className="ar-preview-wrapper">
+          <ARPreview 
+            product={product} 
+            onClose={toggleARPreview} 
+          />
+        </div>
+      ) : (
+        /* 通常のインテリアプレビュー表示 */
+        <div className="interior-image relative">
+          {mainImageUrl && (
+            <div className="relative w-full h-[500px]">
+              <Image
+                src={mainImageUrl}
+                alt={`${product.title} interior preview`}
+                fill
+                style={{ objectFit: 'cover' }}
+                className="rounded-lg"
+              />
+              
+              {/* ARプレビューボタン - ARが利用可能な場合のみ表示 */}
+              {isARAvailable && (
+                <button
+                  onClick={toggleARPreview}
+                  className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all"
+                  aria-label="ARで壁紙を見る"
+                >
+                  <span>ARで壁に表示</span>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* 追加情報やコントロール（オプション） */}
+      <div className="preview-controls mt-4 flex justify-between items-center">
+        <div className="preview-info text-sm text-neutral-600">
+          {isARAvailable ? (
+            <p>ARボタンをクリックして実際の壁に壁紙を表示できます</p>
+          ) : (
+            <p>この商品はインテリアイメージでのみプレビュー可能です</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };

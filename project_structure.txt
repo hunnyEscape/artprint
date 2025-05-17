@@ -5,14 +5,25 @@
 ├── package-lock.json
 ├── package.json
 ├── postcss.config.js
+├── project_files.md
 ├── project_structure.txt
 ├── public
+│   ├── images
+│   │   └── products
+│   │       ├── cosmic-journey-main.png
+│   │       ├── geometric-dreams-main.png
+│   │       ├── geometric-dreams-thumb1.png
+│   │       ├── nature-harmony-main.png
+│   │       ├── urban-horizon-main.png
+│   │       └── urban-horizon-thumb1.png
 │   ├── next.svg
 │   └── vercel.svg
 ├── src
 │   ├── app
 │   │   ├── api
 │   │   ├── favicon.ico
+│   │   ├── gallery
+│   │   │   └── page.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   ├── lp
@@ -45,13 +56,21 @@
 │   │   │   ├── solution-section.tsx
 │   │   │   ├── subscription-cta-section.tsx
 │   │   │   └── testimonials-section.tsx
+│   │   ├── showcase
+│   │   │   ├── InteriorPreview.tsx
+│   │   │   ├── ProductDetails.tsx
+│   │   │   ├── ProductShowcaseSection.tsx
+│   │   │   └── ShowcaseBackgroundManager.tsx
 │   │   └── ui
 │   │       ├── button.tsx
 │   │       └── ec-link-button.tsx
 │   ├── constants
+│   ├── contexts
+│   │   └── ShowcaseContext.tsx
 │   ├── data
 │   │   └── featured-products.ts
 │   ├── hooks
+│   │   └── useImagePreload.ts
 │   ├── lib
 │   │   └── analytics.ts
 │   ├── styles
@@ -61,4 +80,4 @@
 ├── tailwind.config.js
 └── tsconfig.json
 
-18 directories, 43 files
+23 directories, 57 files
