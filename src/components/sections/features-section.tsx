@@ -1,4 +1,8 @@
+'use client';
+
+import React from 'react';
 import { Container } from "../layout/container";
+import { ARView } from '../ar/ar-view';
 
 type FeatureItem = {
 	title: string;
@@ -29,7 +33,7 @@ const features: FeatureItem[] = [
 	},
 	{
 		title: "高品質デザイン",
-		description: "150種類以上のAIが生成したユニークなデザイン。あなたの好みやインテリアに合わせて選べます。",
+		description: "150種類以上のユニークで高精細なアート。あなたの好みやインテリアに合わせて選べます。",
 		icon: (
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
 				<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -44,10 +48,10 @@ export function FeaturesSection() {
 			<Container>
 				<div className="text-center mb-12 md:mb-16">
 					<h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-						アートペーパーの特長
+						Artpaperの特長
 					</h2>
 					<p className="text-neutral-700 max-w-2xl mx-auto">
-						一般的な壁紙やポスターとは違う、アートペーパーならではの特長をご紹介します。
+						アートペーパーならではの特長をご紹介します。
 					</p>
 				</div>
 
@@ -64,6 +68,19 @@ export function FeaturesSection() {
 							<p className="text-neutral-700">{feature.description}</p>
 						</div>
 					))}
+				</div>
+
+				{/* 3Dプレビュー部分 - 最初から表示 */}
+				<div className="mt-16">
+					<h3 className="text-2xl font-medium mb-6 text-center">
+						製品を3Dで体験してみよう
+					</h3>
+					<div className="max-w-3xl mx-auto">
+						<ARView modelUrl="/models/urban-horizon.glb" />
+					</div>
+					<p className="text-center text-neutral-600 mt-4">
+						↑ ドラッグで回転、ピンチで拡大縮小できます
+					</p>
 				</div>
 			</Container>
 		</section>
