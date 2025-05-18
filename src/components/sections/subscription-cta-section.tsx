@@ -26,7 +26,7 @@ export function SubscriptionCTASection() {
 							新登場：サブスクリプション
 						</span>
 						<h2 className="font-display text-3xl font-bold mb-6 md:text-4xl">
-							毎月新しいアートで、<br />部屋の世界観を自由に変える
+							毎月新しい大型アートで、<br />部屋の世界観を自在にカスタム
 						</h2>
 						<p className="text-lg text-neutral-700">
 							Artpaperのサブスクリプションなら、月額定額で最大3枚まで発注できます。<br />

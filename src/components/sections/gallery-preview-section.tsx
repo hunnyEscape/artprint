@@ -1,6 +1,6 @@
-// src/components/sections/gallery-preview-section.tsx
 import { Container } from "../layout/container";
 import Link from "next/link";
+import Image from "next/image";
 
 type GalleryItem = {
 	id: string;
@@ -15,31 +15,31 @@ const galleryItems: GalleryItem[] = [
 		id: "art1",
 		title: "青い抽象画",
 		category: "抽象",
-		thumbnail: "/images/placeholder.jpg",
+		thumbnail: "/images/lp/g1.png",
 	},
 	{
 		id: "art2",
 		title: "自然風景",
-		category: "風景",
-		thumbnail: "/images/placeholder.jpg",
+		category: "グラフィックアート",
+		thumbnail: "/images/lp/g2.png",
 	},
 	{
 		id: "art3",
 		title: "都市の夜景",
-		category: "モダン",
-		thumbnail: "/images/placeholder.jpg",
+		category: "レトロ",
+		thumbnail: "/images/lp/g3.png",
 	},
 	{
 		id: "art4",
-		title: "宇宙テーマ",
-		category: "サイバー",
-		thumbnail: "/images/placeholder.jpg",
+		title: "ユーモア",
+		category: "クリエイティブ",
+		thumbnail: "/images/lp/g4.png",
 	},
 ];
 
 export function GalleryPreviewSection() {
 	return (
-		<section className="py-16 md:py-24">
+		<section className="py-16 bg-white md:py-24">
 			<Container>
 				<div className="text-center mb-12">
 					<h2 className="font-display text-3xl font-bold mb-4 md:text-4xl">
@@ -66,18 +66,13 @@ export function GalleryPreviewSection() {
 							className="block group"
 						>
 							<div className="rounded-lg overflow-hidden shadow-card transition-all duration-300 group-hover:shadow-hover group-hover:-translate-y-1">
-								<div
-									style={{
-										aspectRatio: '3/4',
-										background: 'linear-gradient(to bottom right, #f0f9ff, #e0f2fe)',
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center'
-									}}
-								>
-									<span className="text-neutral-500">
-										{item.title}
-									</span>
+								<div className="relative aspect-[3/4] w-full">
+									<Image
+										src={item.thumbnail}
+										alt={item.title}
+										fill
+										className="object-cover transition-transform duration-300 group-hover:scale-105"
+									/>
 								</div>
 								<div className="p-4">
 									<h3 className="font-medium text-lg mb-1">{item.title}</h3>

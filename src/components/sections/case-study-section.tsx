@@ -49,7 +49,7 @@ export function CaseStudySection() {
 						ビフォー/アフターで見る効果
 					</h2>
 					<p className="text-lg text-neutral-700">
-						Artpaperを使用して、実際にどのような変化が起きるのかをご覧ください。
+						Artpaperが実際にどのように使用されるかご覧ください。
 					</p>
 				</div>
 

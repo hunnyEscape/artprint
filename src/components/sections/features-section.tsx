@@ -40,6 +40,18 @@ const features: FeatureItem[] = [
 			</svg>
 		),
 	},
+	{
+		title: "数量限定",
+		description: "ArtPaterは会員限定です。ここでしか手に入りません。新作デザインが定期的に発表されます。早いもの順です。",
+		icon: (
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+				<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+				<polyline points="22 4 12 14.01 9 11.01"></polyline>
+				<circle cx="7" cy="17" r="3"></circle>
+				<path d="M10.5 17H7v-3l-2 2v3h3.5"></path>
+			</svg>
+		),
+	},
 ];
 
 export function FeaturesSection() {
@@ -55,7 +67,7 @@ export function FeaturesSection() {
 					</p>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+				<div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-12">
 					{features.map((feature, index) => (
 						<div
 							key={index}

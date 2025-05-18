@@ -19,6 +19,7 @@ import { featuredProducts } from '@/data/featured-products';
 import { ProductShowcaseSection } from '@/components/showcase/ProductShowcaseSection';
 import { ShowcaseProvider } from '@/contexts/ShowcaseContext';
 import { ShowcaseBackgroundManager } from '@/components/showcase/ShowcaseBackgroundManager';
+import { WallpaperSizesSection } from '@/components/sections/WallpaperSizesSection';
 
 export const metadata: Metadata = {
 	title: 'Artpaper | 貼るだけで部屋の世界観が変わる大型AIアート',
@@ -67,6 +68,13 @@ export default function LandingPage() {
 			<div id="features-section" data-section-name="特徴セクション">
 				<FeaturesSection />
 			</div>
+			<div id="features-size-section" data-section-name="サイズセッション">
+				<WallpaperSizesSection />
+			</div>
+
+			<div id="next-release-section" data-section-name="次回リリース">
+				<NextReleaseCountdownSection />
+			</div>
 			<div id="comparison-section" data-section-name="比較セクション">
 				<ComparisonSection />
 			</div>
@@ -79,12 +87,11 @@ export default function LandingPage() {
 			<div id="subscription-section" data-section-name="サブスクリプション">
 				<SubscriptionCTASection />
 			</div>
+			{/*
 			<div id="limited-collection-section" data-section-name="限定コレクション">
 				<LimitedCollectionSection />
 			</div>
-			<div id="next-release-section" data-section-name="次回リリース">
-				<NextReleaseCountdownSection />
-			</div>
+			*/}
 			<div id="gallery-preview-section" data-section-name="ギャラリープレビュー">
 				<GalleryPreviewSection />
 			</div>

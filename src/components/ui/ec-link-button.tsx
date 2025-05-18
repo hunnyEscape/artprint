@@ -28,7 +28,7 @@ export function ECLinkButton({
 		const baseClasses = 'inline-block rounded-md font-medium transition-colors';
 
 		const variantClasses = {
-			primary: 'bg-accent-500 text-white hover:bg-accent-600 px-6 py-3',
+			primary: 'bg-primary-500 text-white hover:bg-primary-700 px-6 py-3',
 			secondary: 'bg-primary-500 text-white hover:bg-primary-600 px-6 py-3',
 			outline: 'border border-neutral-300 hover:bg-neutral-100 px-5 py-2.5'
 		};

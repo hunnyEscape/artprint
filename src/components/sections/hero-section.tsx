@@ -9,7 +9,7 @@ export function HeroSection() {
 				<div className="text-white drop-shadow-lg grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 					<div className="order-2 md:order-1">
 						<h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-							貼るだけ<span className="text-accent-500">3分</span>、<br />
+							貼るだけ3分、<br />
 							部屋が変わる。
 						</h1>
 						<p className="text-lg md:text-xl mb-8 max-w-lg">
@@ -22,8 +22,8 @@ export function HeroSection() {
 								className="
 									inline-block text-center
 									px-8 py-3 rounded-md font-medium text-lg
-									bg-accent-500 text-white border border-accent-500
-									hover:bg-accent-600 hover:border-accent-600
+									bg-primary-500 text-white border border-primary-500
+									hover:bg-primary-900 hover:border-primary-900
 									focus:outline-none focus:ring-4 focus:ring-accent-300
 									transition-all duration-200
 								"
@@ -33,8 +33,8 @@ export function HeroSection() {
 							<Link
 								href="/how-it-works"
 								className="
-								px-8 py-3 rounded-md font-medium text-lg text-accent-500
-								border border-accent-500 hover:bg-accent-50
+								px-8 py-3 rounded-md font-medium text-lg
+								border border-white hover:bg-accent-50
 								focus:outline-none focus:ring-4 focus:ring-accent-300/40
 								transition-all duration-200
 							"

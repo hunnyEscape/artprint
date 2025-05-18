@@ -57,7 +57,7 @@ export function SolutionSection() {
 					</div>
 				</div>
 
-				<div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl p-8 md:p-12">
+				<div className="bg-primary-50 text-neutral-900 rounded-xl p-8 md:p-12">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
 						<div>
 							<h3 className="text-2xl font-bold mb-4">
@@ -97,7 +97,7 @@ export function SolutionSection() {
 									href="https://ec.artpaper.com/products"
 									location="solution"
 									variant="primary"
-									className="bg-white text-primary-700 hover:bg-white/90 px-8 py-4 text-lg shadow-lg"
+									className="bg-primary-500 text-white px-8 py-4 text-lg shadow-lg hover:bg-primary-900 hover:border-primary-900"
 								>
 									商品を見てみる
 								</ECLinkButton>
